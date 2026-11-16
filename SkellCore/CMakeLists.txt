@@ -31,13 +31,14 @@ endif()
 
 option(SKELLCORE_BUILD_TESTS "Build portable SkellCore DSP tests" OFF)
 if(SKELLCORE_BUILD_TESTS)
-  # These legacy test targets contain assert(...). In Release, NDEBUG would
-  # compile those checks away. Un-define it for tests, without affecting the
-  # plug-in/production DSP build (this option is scoped to this directory).
+  # The CMake Release defaults define NDEBUG, which would remove legacy
+  # assert() checks. Remove that definition from this test directory's
+  # configuration rather than add /UNDEBUG after /DNDEBUG (MSVC D9025 warning).
+  # This subdirectory-scope change never affects the host plug-in's targets.
   if(MSVC)
-    add_compile_options(/UNDEBUG)
+    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
   else()
-    add_compile_options(-UNDEBUG)
+    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
   endif()
   enable_testing()
   add_executable(SkellCoreAssertionsActiveTests tests/test_assertions_active.cpp)
