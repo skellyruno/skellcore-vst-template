@@ -20,7 +20,9 @@ The former Skell VST Quickstart is preserved as a **small gain demo plugin**, wi
 python tools/new_plugin.py "Skell Compressor" ../skell-compressor-vst --code SC01
 ```
 
-This creates an independent VST3 + Standalone project with an immutable SkellCore dependency, unique plugin code, generated CI, and the original quickstart gain processor. Pick a different four-character code for **every** plugin. Once you rename the GitHub template repository, use `--core-repo https://github.com/skellyruno/skellcore-vst-template.git`.
+This creates an independent VST3 + Standalone project with an immutable SkellCore dependency, unique plugin code, generated CI, and the original quickstart gain processor. Pick a different four-character code for **every** plugin.
+
+Generated products use their own CMake project version in the clickable badge. Update checks are deliberately **not configured by default**: pass `--release-repo skellyruno/ACTUAL-PRODUCT-REPO` to the generator once its release repository exists. Otherwise the badge clearly reports that updates are unavailable; it must never check SkellCore template releases for a different product. The generator pins the minimum compatible shared UI revision and validates the generated editor's Windows VST3 with a dedicated smoke workflow. Once you rename the GitHub template repository, use `--core-repo https://github.com/skellyruno/skellcore-vst-template.git`.
 
 ## Low-end PC performance and safety
 

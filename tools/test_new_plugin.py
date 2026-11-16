@@ -19,6 +19,7 @@ class GeneratorTests(unittest.TestCase):
             self.assertIn('PLUGIN_CODE SC01', (dest / "CMakeLists.txt").read_text())
             self.assertIn('audio.skell.skellcompressor', (dest / "CMakeLists.txt").read_text())
             self.assertIn(module.DEFAULT_REV, (dest / "CMakeLists.txt").read_text())
+            self.assertIn('SKELL_PRODUCT_VERSION=\\"', (dest / "CMakeLists.txt").read_text())
             self.assertIn("skellcore-vst-template.git", (dest / "CMakeLists.txt").read_text())
             self.assertIn("SkellCompressorAudioProcessor", (dest / "Source" / "PluginProcessor.cpp").read_text())
             self.assertIn('skell.skellcompressor', (dest / "Source" / "PluginProcessor.h").read_text())
@@ -28,11 +29,17 @@ class GeneratorTests(unittest.TestCase):
             self.assertEqual(manifest["plugin_code"],"SC01")
             self.assertIn("smoothedGain_", (dest / "Source" / "PluginProcessor.h").read_text())
             self.assertIn("Skell Compressor", (dest / "Source" / "PluginEditor.cpp").read_text())
+            editor = (dest / "Source" / "PluginEditor.cpp").read_text()
+            self.assertIn("SKELL_PRODUCT_VERSION", editor)
+            self.assertIn('versionBadge_("Skell Compressor"', editor)
+            self.assertNotIn('"skellyruno", "skellcore-vst-template"', editor)
+            self.assertIn('"", ""', editor)
             self.assertIn("setResizable(true, true)", (dest / "Source" / "PluginEditor.cpp").read_text())
             self.assertIn("skullMark_.onClick", (dest / "Source" / "PluginEditor.cpp").read_text())
             self.assertIn("FORMATS VST3 Standalone", (dest / "CMakeLists.txt").read_text())
             self.assertTrue((dest / ".github/workflows/build.yml").exists())
             self.assertTrue((dest / ".github/workflows/ui-renderer.yml").exists())
+            self.assertIn("fourteen", (dest / ".github/workflows/ui-renderer.yml").read_text().lower())
             self.assertTrue((dest / "tools/UiRendererMain.cpp").exists())
             self.assertIn("SkellCompressorAudioProcessor", (dest / "tools/UiRendererMain.cpp").read_text())
             self.assertIn("SkellCore::UIRenderer", (dest / "CMakeLists.txt").read_text())
@@ -40,6 +47,15 @@ class GeneratorTests(unittest.TestCase):
             self.assertFalse((dest / "SkellCore").exists())
             with self.assertRaises(FileExistsError):
                 module.make_project("Skell Compressor", dest, "SC01")
+    def test_product_specific_release_repository(self):
+        with tempfile.TemporaryDirectory() as root:
+            dest = Path(root) / "with-updates"
+            module.make_project("Skell Compressor", dest, "SC02",
+                                release_repo="skellyruno/skell-compressor-vst")
+            source = (dest / "Source" / "PluginEditor.cpp").read_text()
+            self.assertIn('"skellyruno", "skell-compressor-vst"', source)
+            self.assertNotIn('"skellyruno", "skellcore-vst-template"', source)
+
     def test_long_product_name_gets_bounded_stable_world_id(self):
         with tempfile.TemporaryDirectory() as root:
             name = "Skell " + "Extreme" * 10
@@ -57,6 +73,10 @@ class GeneratorTests(unittest.TestCase):
             self.assertFalse(dest.exists())
             with self.assertRaises(ValueError):
                 module.make_project("Skell Test", dest, "ST01", core_rev="main")
+            self.assertFalse(dest.exists())
+            for bad in ("owner-only", "owner/../traversal", 'owner/bad"repo', "-invalid/repo"):
+                with self.assertRaises(ValueError):
+                    module.make_project("Skell Test", dest, "ST01", release_repo=bad)
             self.assertFalse(dest.exists())
 
 if __name__ == "__main__":

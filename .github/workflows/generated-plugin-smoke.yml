@@ -1,0 +1,49 @@
+name: SkellCore generated plugin Windows smoke
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+on:
+  pull_request:
+    paths:
+      - 'tools/new_plugin.py'
+      - 'tools/test_new_plugin.py'
+      - 'Source/**'
+      - 'SkellCore/include/SkellCore/FontSystem.h'
+      - 'SkellCore/include/SkellCore/UpdateBadge.h'
+      - 'SkellCore/include/SkellCore/Version.h'
+      - '.github/workflows/generated-plugin-smoke.yml'
+  workflow_dispatch:
+jobs:
+  smoke:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generator regression tests
+        run: python tools/test_new_plugin.py
+      - name: Generate independent VST3 with an explicit release repository
+        run: python tools/new_plugin.py "Skell Generated" generated-smoke --code ZQ91 --release-repo skellyruno/skell-generated-vst
+      - name: Verify generated CMake and actual JUCE editor source
+        run: cmake -S generated-smoke -B build-generated -A x64 -DSKELLCORE_BUILD_UI_RENDERER=ON -DFETCHCONTENT_SOURCE_DIR_SKELLCORE="${{ github.workspace }}"
+      - name: Compile real generated Windows VST3 and editor renderer
+        run: cmake --build build-generated --config Release --target SkellGenerated SkellGeneratedUIRenderer --parallel 2
+      - name: Verify VST3 binary and capture real generated editor
+        shell: pwsh
+        run: |
+          $bundle = Get-ChildItem build-generated -Recurse -Directory -Filter '*.vst3' | Select-Object -First 1
+          if (-not $bundle) { throw 'Generated VST3 bundle missing' }
+          $binary = Get-ChildItem $bundle.FullName -Recurse -File -Filter '*.vst3' | Select-Object -First 1
+          if (-not $binary -or $binary.Length -lt 1024) { throw 'Compiled Windows VST3 binary missing or empty' }
+          $exe = Get-ChildItem build-generated -Recurse -File -Filter 'SkellGeneratedUIRenderer.exe' | Select-Object -First 1
+          if (-not $exe) { throw 'Actual generated-editor renderer missing' }
+          & $exe.FullName (Join-Path (Get-Location) 'generated-smoke/ui-screenshots')
+          if ($LASTEXITCODE -ne 0) { throw "Generated renderer failed: $LASTEXITCODE" }
+          $screens = @(Get-ChildItem generated-smoke/ui-screenshots -File -Filter '*.png')
+          if ($screens.Count -ne 14) { throw "Expected 14 real-editor screenshots, got $($screens.Count)" }
+          if (-not (Test-Path generated-smoke/ui-screenshots/unicode_ivory_large.png)) { throw 'Unicode/emoji scene not captured' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SkellCore-Generated-Real-Editor-UI
+          path: generated-smoke/ui-screenshots/*
+          retention-days: 7
+          if-no-files-found: error

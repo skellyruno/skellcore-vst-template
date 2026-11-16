@@ -8,11 +8,12 @@ import shutil
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_REV = "4c499c58cb3b2791eed2d5dcef6d8d543fcaea8d"
+DEFAULT_REV = "428b69f2937c8aa8ad1bb8e25dc8b3e873c45bf6"
 DEFAULT_REPO = "https://github.com/skellyruno/skellcore-vst-template.git"
 
 def make_project(name: str, destination: Path, code: str,
-                 core_rev: str = DEFAULT_REV, core_repo: str = DEFAULT_REPO):
+                 core_rev: str = DEFAULT_REV, core_repo: str = DEFAULT_REPO,
+                 release_repo: str = ""):
     if not re.fullmatch(r"[A-Za-z0-9]{4}", code):
         raise ValueError("--code must be exactly four ASCII letters/digits, unique to this plugin")
     # Prevent collisions with known VST3 product codes from existing SKELL
@@ -26,6 +27,16 @@ def make_project(name: str, destination: Path, code: str,
                 raise ValueError(f"Plugin code {code} is already used by {entry['repository']}")
     if not re.fullmatch(r"[0-9a-fA-F]{40}", core_rev):
         raise ValueError("SkellCore revision must be an immutable 40-character commit SHA")
+    # Do not silently point a new product at the SkellCore template's releases.
+    # An update source is opt-in until the owning plugin repository is known.
+    if release_repo:
+        if not re.fullmatch(r"[A-Za-z0-9-]{1,39}/[A-Za-z0-9_.-]{1,100}", release_repo):
+            raise ValueError("--release-repo must be OWNER/REPO, not a URL")
+        release_owner, release_name = release_repo.split("/", 1)
+        if release_owner.startswith("-") or release_owner.endswith("-") or release_name in (".", ".."):
+            raise ValueError("--release-repo must identify a valid GitHub repository")
+    else:
+        release_owner, release_name = "", ""
     if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_ ]{1,79}", name):
         raise ValueError("Use 2-80 letters/digits/spaces/underscores for the plugin name")
     target = "".join(s[:1].upper() + s[1:] for s in re.findall(r"[A-Za-z0-9]+", name))
@@ -53,6 +64,9 @@ def make_project(name: str, destination: Path, code: str,
             body = body.replace("SkellAudioProcessor", f"{target}AudioProcessor")
             body = body.replace("Skell Quickstart", name)
             body = body.replace("skellcore.quickstart", world_id)
+            if oldfile.name == "PluginEditor.cpp":
+                body = body.replace('"skellyruno", "skellcore-vst-template"',
+                                    f'"{release_owner}", "{release_name}"')
             (src / oldfile.name).write_text(body, encoding="utf-8")
         cmake = f'''cmake_minimum_required(VERSION 3.22)
 project({target} VERSION 1.0.0 LANGUAGES C CXX)
@@ -86,6 +100,7 @@ target_sources({target} PRIVATE Source/PluginProcessor.cpp Source/PluginProcesso
     Source/PluginEditor.cpp Source/PluginEditor.h)
 target_compile_features({target} PRIVATE cxx_std_17)
 target_compile_definitions({target} PRIVATE JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JUCE_VST3_CAN_REPLACE_VST2=0)
+target_compile_definitions({target} PRIVATE SKELL_PRODUCT_VERSION=\\\"${{PROJECT_VERSION}}\\\")
 target_link_libraries({target} PRIVATE SkellCore::DSP SkellCore::UI
     juce::juce_audio_utils juce::juce_audio_processors juce::juce_gui_extra)
 '''
@@ -164,7 +179,7 @@ jobs:
           if (-not $exe) { throw 'Renderer executable missing' }
           & $exe.FullName (Join-Path (Get-Location) 'ui-screenshots')
           if ($LASTEXITCODE -ne 0) { throw "Renderer failed: $LASTEXITCODE" }
-          if (@(Get-ChildItem ui-screenshots -Filter *.png).Count -ne 13) { throw 'Expected thirteen skin/size/tour screenshot PNGs' }
+          if (@(Get-ChildItem ui-screenshots -Filter *.png).Count -ne 14) { throw 'Expected fourteen skin/size/tour/Unicode screenshot PNGs' }
       - uses: actions/upload-artifact@v4
         with:
           name: Skell-UI-Screenshots
@@ -182,6 +197,7 @@ Generated from SkellCore VST Template. The original demo processing is a gain kn
 - Manufacturer code: SkAu
 - Unique VST3 plugin code: {code}
 - Shared SkellCore source: {core_repo}@{core_rev}
+- Version badge uses CMake PROJECT_VERSION; update source: {release_repo or "not configured (safe default)"}
 
 ## Build
 ```sh
@@ -189,12 +205,12 @@ cmake -S . -B build -DJUCE_PATH=/path/to/JUCE
 cmake --build build --config Release
 ```
 
-SkellCore is fetched by a pinned commit. Only update that pin after testing.
+SkellCore is fetched by a pinned commit. Only update that pin after testing. To enable the clickable update checker, regenerate with `--release-repo OWNER/REPO` once the actual product repository exists and has published stable SemVer releases; otherwise clicking reports that updates are not configured. Never reuse the template project\u0027s release source.
 The shared **Live Engine** is available as `#include <SkellCore/LiveEngine.h>`
 for latency-contract reporting and opt-in zero-delay multiband sidechain processing.
 It is **not** applied to the generated gain plugin automatically. See
 [docs/LIVE_ENGINE.md](https://github.com/skellyruno/skellcore-vst-template/blob/main/docs/LIVE_ENGINE.md)
-for live/studio architecture and honest PDC/DAW monitoring latency guidance.\n\nThe generated project includes an opt-in **real JUCE UI screenshot renderer**:\n\n```sh\ncmake -S . -B build -DSKELLCORE_BUILD_UI_RENDERER=ON\ncmake --build build --config Release --target {target}UIRenderer\n```\n\nRun `{target}UIRenderer` with an output folder argument, or use the GitHub Actions **Headless JUCE UI screenshots** workflow. Four Studio UI skins and thirteen size/skin/guided-tour screenshots are included. Guided tours remain opt-in for complex plugin editors. Configure additional themes and layouts in `tools/UiRendererMain.cpp`.
+for live/studio architecture and honest PDC/DAW monitoring latency guidance.\n\nThe generated project includes an opt-in **real JUCE UI screenshot renderer**:\n\n```sh\ncmake -S . -B build -DSKELLCORE_BUILD_UI_RENDERER=ON\ncmake --build build --config Release --target {target}UIRenderer\n```\n\nRun `{target}UIRenderer` with an output folder argument, or use the GitHub Actions **Headless JUCE UI screenshots** workflow. Four Studio UI skins and fourteen size/skin/guided-tour/Unicode screenshots are included. Guided tours remain opt-in for complex plugin editors. Configure additional themes and layouts in `tools/UiRendererMain.cpp`.
 To build in GitHub, upload this generated folder as its own repository and run Actions.
 Do not reuse the same plugin code or bundle ID in two shipping plugins.
 """
@@ -225,9 +241,10 @@ def main():
     p.add_argument("--code", required=True, help="Four-character unique VST3 plugin code")
     p.add_argument("--core-rev", default=DEFAULT_REV)
     p.add_argument("--core-repo", default=DEFAULT_REPO)
+    p.add_argument("--release-repo", default="", help="Optional official GitHub OWNER/REPO for stable release checks")
     a = p.parse_args()
     try:
-        print(f"Created {make_project(a.name, a.destination, a.code, a.core_rev, a.core_repo)}")
+        print(f"Created {make_project(a.name, a.destination, a.code, a.core_rev, a.core_repo, a.release_repo)}")
     except (ValueError, FileExistsError, FileNotFoundError) as exc:
         p.error(str(exc))
 

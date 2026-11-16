@@ -5,7 +5,7 @@ SkellAudioProcessorEditor::SkellAudioProcessorEditor(SkellAudioProcessor& p)
     : AudioProcessorEditor(&p),
       skin_(skellcore::ui::StudioSkinStore::load()),
       world_(p.worldLink),
-      versionBadge_("Skell Quickstart", SKELL_QUICKSTART_VERSION,
+      versionBadge_("Skell Quickstart", SKELL_PRODUCT_VERSION,
                     "skellyruno", "skellcore-vst-template"),
       gainAttachment(p.parameters, "gain", gain) {
   setLookAndFeel(&skin_);
