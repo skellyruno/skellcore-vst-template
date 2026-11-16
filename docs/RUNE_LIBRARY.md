@@ -24,3 +24,11 @@ Provenance: original vectors authored for Necromancer commit
 `5b7ba2b3d094f9b144d72cce6dbb9cac92369e51`.
 Portable CTest covers the catalogue and motion; JUCE drawing and real Quick4
 screenshots still require a JUCE-enabled project and visual verification.
+
+## Independent real-JUCE compile gate
+
+The optional `SkellCoreUISmokeRenderer` target includes the shared artwork
+header, creates an actual JUCE `Image`, and checks all 24 Egyptian cells for
+non-empty anti-aliased strokes. The renderer keeps the same **13** real editor
+scenes so existing Quick4 screenshot count/manifest requirements do not change.
+This validates the portable library *and* the JUCE drawing interface separately.
