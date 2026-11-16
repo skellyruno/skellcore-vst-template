@@ -29,3 +29,5 @@ An editor owns its network worker and receives updates via `juce::AsyncUpdater` 
 ## All portable tests are meaningful in Release builds
 
 `SkellCore/CMakeLists.txt` removes the default `/DNDEBUG` or `-DNDEBUG` definition from the **SkellCore portable-test directory's Release flags** when tests are enabled, leaving production plug-in compilation untouched and avoiding MSVC D9025 override warnings. A `SkellCoreAssertionsActiveTests` compile gate fails if `NDEBUG` remains defined. The historical tests using `assert(...)` now actually exercise their checks on Windows/Linux Release builds; new release and version tests also use unconditional CHECKs. Do not remove the guard without replacing all assertions with unconditional test checks.
+
+Generated-product compatibility pin: `49bc7f23c81aad73720e2cce0b54c2d047743892` contains both `ReleasePolicy.h` **and the owned-worker `UpdateBadge.h`**. Pinning only the earlier policy-only commit would silently preserve the detached-worker implementation in new plug-ins even when the generator's own source is up to date. Generated VST3 CI must compile against this exact revision.
