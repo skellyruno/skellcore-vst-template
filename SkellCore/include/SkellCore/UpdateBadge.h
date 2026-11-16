@@ -37,7 +37,7 @@ public:
     }
     checking_ = true;
     const auto savedText = getButtonText();
-    setButtonText("CHECKING");
+    setButtonText("...");
     const auto weak = juce::Component::SafePointer<UpdateBadge>(this);
     const auto api = juce::String("https://api.github.com/repos/") + owner_ + "/" + repo_ + "/releases/latest";
     const bool launched = juce::Thread::launch([weak, api, savedText] {

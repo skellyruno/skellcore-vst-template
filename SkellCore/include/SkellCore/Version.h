@@ -41,8 +41,12 @@ inline Number parse(std::string_view text) noexcept {
     text.remove_prefix(1);
   std::size_t at = 0;
   if (!readNumber(text, at, out.major) || at == text.size() || text[at++] != '.' ||
-      !readNumber(text, at, out.minor) || at == text.size() || text[at++] != '.' ||
-      !readNumber(text, at, out.patch)) return out;
+      !readNumber(text, at, out.minor)) return out;
+  // Two-component product versions (v2.5) are treated as v2.5.0.
+  if (at < text.size() && text[at] == '.') {
+    ++at;
+    if (!readNumber(text, at, out.patch)) return out;
+  }
   if (at < text.size() && text[at] == '-') {
     const auto start = ++at;
     while (at < text.size() && text[at] != '+') ++at;

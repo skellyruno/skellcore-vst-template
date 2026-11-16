@@ -8,7 +8,10 @@ int main() {
   assert(parse("v1.2.3").valid);
   assert(parse("V0.10.42+build.1").valid);
   assert(parse("2.4.0-rc.12+release").valid);
-  assert(!parse("1.2").valid);
+  assert(parse("1.2").valid);
+  assert(!parse("1").valid);
+  assert(newer("v2.4", "v2.5"));
+  assert(!newer("2.5.0", "v2.5"));
   assert(!parse("1.2.3garbage").valid);
   assert(!parse("v1.2.3-").valid);
   assert(!parse("1.2.3+bad..meta").valid);

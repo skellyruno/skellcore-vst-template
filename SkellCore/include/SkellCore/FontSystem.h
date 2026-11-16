@@ -36,7 +36,7 @@ public:
   }
 
   static juce::StringArray availableFamilies() {
-    return juce::Font::findAllTypefaceNames();
+    return installedFamilies();
   }
 
   // Render missing text with JUCE's Unicode text shaping rather than replacing
@@ -47,6 +47,13 @@ public:
   }
 
 private:
+  // Cache platform enumeration: makes recurring editor repaints independent
+  // of costly installed-font scans. Loaded plugin typefaces still work by name.
+  static const juce::StringArray& installedFamilies() {
+    static const auto installed = juce::Font::findAllTypefaceNames();
+    return installed;
+  }
+
   static juce::String chooseFamily(FontRole role) {
     if (role == FontRole::Emoji)
       return firstInstalled({"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji",
@@ -58,14 +65,14 @@ private:
   }
 
   static juce::String firstInstalled(std::initializer_list<const char*> candidates) {
-    const auto families = availableFamilies();
+    const auto& families = installedFamilies();
     for (const auto* family : candidates)
       if (families.contains(family, true)) return juce::String(family);
     return juce::Font::getDefaultSansSerifFontName();
   }
 
   static juce::StringArray fallbacks(FontRole role) {
-    const auto families = availableFamilies();
+    const auto& families = installedFamilies();
     const std::vector<juce::String> preferred = role == FontRole::Emoji
       ? std::vector<juce::String>{"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji",
                                    "Noto Emoji", "Segoe UI Symbol", "Noto Sans Symbols 2",
