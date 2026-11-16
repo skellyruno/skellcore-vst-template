@@ -68,6 +68,21 @@ int main(int argc, char** argv) {
         std::fprintf(stderr, "GuidedTour BACK navigation failed\n");
         return 1;
     }
+    // Regression: when a user maximizes the real plugin editor, the tutorial
+    // must grow with it instead of leaving 11px text on an 1800px canvas.
+    const auto compactBubble = geometryTour.informationBounds();
+    geometryRoot.setSize(1800,1140);
+    geometryTour.setBounds(geometryRoot.getLocalBounds());
+    const auto enlargedBubble = geometryTour.informationBounds();
+    if (compactBubble.getWidth() > 355
+        || enlargedBubble.getWidth() < 500
+        || enlargedBubble.getHeight() < 195
+        || !geometryTour.getLocalBounds().contains(enlargedBubble)) {
+        std::fprintf(stderr,"GuidedTour large-editor text card did not scale or fit\\n");
+        return 1;
+    }
+    geometryRoot.setSize(600,400);
+    geometryTour.setBounds(geometryRoot.getLocalBounds());
     geometryTour.setColours({ juce::Colour(0xffd4a3f2),
                                juce::Colour(0xff201528),
                                juce::Colours::white,
