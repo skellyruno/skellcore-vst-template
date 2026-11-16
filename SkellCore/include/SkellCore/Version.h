@@ -20,17 +20,37 @@ inline bool readNumber(std::string_view text, std::size_t& at, std::uint32_t& va
       return false;
     value = value * 10u + digit;
   }
-  return at != start;
+  // Leading zeros are ambiguous and forbidden by SemVer (except the value 0).
+  return at != start && (at - start == 1 || text[start] != '0');
 }
 
-inline bool validIdentifiers(std::string_view text) noexcept {
+inline bool validIdentifiers(std::string_view text, bool prerelease = false) noexcept {
   if (text.empty() || text.front() == '.' || text.back() == '.') return false;
   bool dot = false;
-  for (const auto c : text) {
-    if (c == '.') { if (dot) return false; dot = true; continue; }
+  std::size_t tokenStart = 0;
+  for (std::size_t i = 0; i < text.size(); ++i) {
+    const char c = text[i];
+    if (c == '.') {
+      if (dot) return false;
+      if (prerelease && i - tokenStart > 1 && text[tokenStart] == '0') {
+        bool allDigits = true;
+        for (std::size_t n = tokenStart; n < i; ++n)
+          if (text[n] < '0' || text[n] > '9') allDigits = false;
+        if (allDigits) return false;
+      }
+      tokenStart = i + 1;
+      dot = true;
+      continue;
+    }
     dot = false;
     if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') ||
           (c >= 'A' && c <= 'Z') || c == '-')) return false;
+  }
+  if (prerelease && text.size() - tokenStart > 1 && text[tokenStart] == '0') {
+    bool allDigits = true;
+    for (std::size_t n = tokenStart; n < text.size(); ++n)
+      if (text[n] < '0' || text[n] > '9') allDigits = false;
+    if (allDigits) return false;
   }
   return true;
 }
@@ -51,7 +71,7 @@ inline Number parse(std::string_view text) noexcept {
     const auto start = ++at;
     while (at < text.size() && text[at] != '+') ++at;
     out.prerelease = text.substr(start, at - start);
-    if (!validIdentifiers(out.prerelease)) return out;
+    if (!validIdentifiers(out.prerelease, true)) return out;
   }
   if (at < text.size() && text[at] == '+') {
     const auto meta = text.substr(at + 1);

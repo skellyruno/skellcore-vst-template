@@ -45,12 +45,14 @@ SkellAudioProcessorEditor::SkellAudioProcessorEditor(SkellAudioProcessor& p)
     else world_.join(); // explicit only: never join at plugin load
     timerCallback();
   };
+  worldStatus_.setComponentID("skellcore.world-status");
   worldStatus_.setJustificationType(juce::Justification::centredLeft);
   worldStatus_.setFont(skellcore::ui::FontSystem::make(11.0f));
   addAndMakeVisible(worldButton_);
   addAndMakeVisible(worldStatus_);
   versionBadge_.setColour(juce::TextButton::textColourOffId, skin_.palette().secondary);
   addAndMakeVisible(versionBadge_);
+  timerCallback(); // Populate OFFLINE/ONLINE on the very first paint.
   startTimerHz(4); // UI/status only, never processBlock
   setSize(480, 330);
 }

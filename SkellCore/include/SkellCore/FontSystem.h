@@ -2,7 +2,7 @@
 // Shared opt-in font helpers for JUCE 8 editor code. Never call on the audio thread.
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <cmath>
-#include <vector>
+#include <initializer_list>
 
 namespace skellcore::ui {
 enum class FontRole { Text, Heading, Symbol, Emoji };
@@ -71,19 +71,26 @@ private:
     return juce::Font::getDefaultSansSerifFontName();
   }
 
-  static juce::StringArray fallbacks(FontRole role) {
-    const auto& families = installedFamilies();
-    const std::vector<juce::String> preferred = role == FontRole::Emoji
-      ? std::vector<juce::String>{"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji",
-                                   "Noto Emoji", "Segoe UI Symbol", "Noto Sans Symbols 2",
-                                   "DejaVu Sans"}
-      : std::vector<juce::String>{"Segoe UI Symbol", "Noto Sans Symbols 2",
-                                   "Noto Sans Symbols", "Segoe UI Emoji", "Apple Color Emoji",
-                                   "Noto Color Emoji", "Noto Sans", "DejaVu Sans"};
-    juce::StringArray result;
-    for (const auto& family : preferred)
-      if (families.contains(family, true)) result.addIfNotAlreadyThere(family);
-    return result;
+  // Immutable OS font fallback tables, built once on the UI thread. Previous
+  // implementation allocated a vector and StringArray on *every paint*.
+  static juce::StringArray detectFamilies(std::initializer_list<const char*> candidates) {
+    const auto& installed = installedFamilies();
+    juce::StringArray selected;
+    for (const auto* name : candidates)
+      if (installed.contains(name, true))
+        selected.addIfNotAlreadyThere(name);
+    return selected;
+  }
+
+  static const juce::StringArray& fallbacks(FontRole role) {
+    static const auto emoji = detectFamilies({
+      "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji",
+      "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans"});
+    static const auto general = detectFamilies({
+      "Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Sans Symbols",
+      "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji",
+      "Noto Sans", "DejaVu Sans"});
+    return role == FontRole::Emoji ? emoji : general;
   }
 };
 } // namespace skellcore::ui

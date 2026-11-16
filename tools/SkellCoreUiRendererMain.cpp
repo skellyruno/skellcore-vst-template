@@ -15,6 +15,17 @@ int main(int argc, char** argv) {
     processor.prepareToPlay(48000.0, 512);
     SkellAudioProcessorEditor editor(processor);
 
+    // A render-only JUCE label in the real editor, used for font QA only.
+    juce::Label unicodeProbe;
+    unicodeProbe.setText(juce::String::fromUTF8(u8"SKELL  ✓  ♪  →  ⚙  ★  ☠  🎹  🩻"),
+                         juce::dontSendNotification);
+    unicodeProbe.setFont(skellcore::ui::FontSystem::make(20.f,
+                            skellcore::ui::FontRole::Emoji));
+    unicodeProbe.setJustificationType(juce::Justification::centred);
+    unicodeProbe.setComponentID("skellcore.font-emoji-probe");
+    editor.addAndMakeVisible(unicodeProbe);
+    unicodeProbe.setVisible(false);
+
     // Real JUCE Unicode shaping and preferred symbol/emoji font smoke check.
     const auto font = skellcore::ui::FontSystem::make(17.0f, skellcore::ui::FontRole::Emoji);
     if (!font.getFallbackEnabled()) {
@@ -146,13 +157,17 @@ int main(int argc, char** argv) {
         {"obsidian_large",  840, 560, 1},
         {"tour_ivory_default", 480, 330, 0, 1},
         {"tour_obsidian_small", 390, 250, 1, 1},
-        {"tour_amethyst_large", 840, 560, 2, 1}
+        {"tour_amethyst_large", 840, 560, 2, 1},
+        {"unicode_ivory_large", 840, 560, 0, 2}
     };
-    options.configure = [&editor, &testTour](const skellcore::ui::headless::Scene& scene) {
+    options.configure = [&editor, &testTour, &unicodeProbe](const skellcore::ui::headless::Scene& scene) {
+        unicodeProbe.setVisible(scene.mode == 2);
+        unicodeProbe.setBounds((scene.width - 520) / 2, 315, 520, 38);
         testTour.dismiss();
         const auto selection = skellcore::ui::studioSkinFromIndex(scene.theme);
         editor.setStudioSkin(selection, false);
         const auto p = skellcore::ui::studioPalette(selection);
+        unicodeProbe.setColour(juce::Label::textColourId, p.foreground);
         testTour.setPalette({p.accent, p.surface, p.foreground, p.secondary,
                              juce::Colour(0xd9000000)});
         if (scene.mode == 1 && !testTour.replay())
@@ -161,14 +176,19 @@ int main(int argc, char** argv) {
     options.inspect = [&editor, &testTour] {
         juce::StringArray problems;
         bool hasVersionBadge = false;
+        bool hasInitialWorldStatus = false;
         for (int i = 0; i < editor.getNumChildComponents(); ++i) {
             const auto* child = editor.getChildComponent(i);
             if (child->getComponentID() == "skellcore.version-check")
                 hasVersionBadge = true;
+            if (child->getComponentID() == "skellcore.world-status")
+                if (auto* label = dynamic_cast<const juce::Label*>(child))
+                    hasInitialWorldStatus = label->getText().isNotEmpty();
             if (child->isVisible() && !editor.getLocalBounds().contains(child->getBounds()))
                 problems.add("Visible control extends outside window: " + child->getName());
         }
         if (!hasVersionBadge) problems.add("Visible clickable version badge is missing");
+        if (!hasInitialWorldStatus) problems.add("World status is blank on initial editor paint");
         if (const auto* overlay = testTour.overlay()) {
             if (overlay->informationBounds().intersects(overlay->spotlightBounds()))
                 problems.add("GuidedTour info panel overlaps spotlight target");
@@ -185,7 +205,8 @@ int main(int argc, char** argv) {
         {"amethyst_default", "crimson_default"},
         {"ivory_default", "tour_ivory_default"},
         {"obsidian_small", "tour_obsidian_small"},
-        {"tour_ivory_default", "tour_obsidian_small"}
+        {"tour_ivory_default", "tour_obsidian_small"},
+        {"ivory_large", "unicode_ivory_large"}
     };
 
     const auto directory = argc > 1
