@@ -44,6 +44,11 @@ class GeneratorTests(unittest.TestCase):
             self.assertIn("SkellCompressorAudioProcessor", (dest / "tools/UiRendererMain.cpp").read_text())
             self.assertIn("SkellCore::UIRenderer", (dest / "CMakeLists.txt").read_text())
             self.assertIn("SkellCompressorUIRenderer", (dest / "CMakeLists.txt").read_text())
+            self.assertIn("target_compile_options(SkellCompressor PRIVATE /utf-8)",
+                          (dest / "CMakeLists.txt").read_text())
+            self.assertIn("target_compile_options(SkellCompressorUIRenderer PRIVATE /utf-8)",
+                          (dest / "CMakeLists.txt").read_text())
+            self.assertIn(r"\u2713", (dest / "tools/UiRendererMain.cpp").read_text())
             self.assertFalse((dest / "SkellCore").exists())
             with self.assertRaises(FileExistsError):
                 module.make_project("Skell Compressor", dest, "SC01")

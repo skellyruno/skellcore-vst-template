@@ -17,12 +17,17 @@ int main(int argc, char** argv) {
 
     // A render-only JUCE label in the real editor, used for font QA only.
     juce::Label unicodeProbe;
-    unicodeProbe.setText(juce::String::fromUTF8(u8"SKELL  ✓  ♪  →  ⚙  ★  ☠  🎹  🩻"),
+    unicodeProbe.setText(juce::String::fromUTF8(u8"SKELL  \u2713  \u266A  \u2192  \u2699  \u2605  \u2620  \U0001F3B9  \U0001FA7B"),
                          juce::dontSendNotification);
     unicodeProbe.setFont(skellcore::ui::FontSystem::make(20.f,
                             skellcore::ui::FontRole::Emoji));
     unicodeProbe.setJustificationType(juce::Justification::centred);
     unicodeProbe.setComponentID("skellcore.font-emoji-probe");
+    if (!unicodeProbe.getText().containsChar(static_cast<juce_wchar>(0x2713)) ||
+        !unicodeProbe.getText().containsChar(static_cast<juce_wchar>(0x2699))) {
+        std::fprintf(stderr, "Unicode input was decoded incorrectly before drawing\\n");
+        return 1;
+    }
     editor.addAndMakeVisible(unicodeProbe);
     unicodeProbe.setVisible(false);
 
@@ -36,7 +41,7 @@ int main(int argc, char** argv) {
     juce::Graphics glyphGraphics(glyphProbe);
     glyphGraphics.setFont(font);
     glyphGraphics.setColour(juce::Colours::white);
-    glyphGraphics.drawSingleLineText(juce::String::fromUTF8("♪ ✓ → ⚙ 🎹"), 8, 30);
+    glyphGraphics.drawSingleLineText(juce::String::fromUTF8(u8"\u266A \u2713 \u2192 \u2699 \U0001F3B9"), 8, 30);
 
     // Test converted coordinate handling through a nested JUCE component
     // and a per-step panel activation callback without touching plugin DSP.

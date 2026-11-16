@@ -99,6 +99,9 @@ juce_generate_juce_header({target})
 target_sources({target} PRIVATE Source/PluginProcessor.cpp Source/PluginProcessor.h
     Source/PluginEditor.cpp Source/PluginEditor.h)
 target_compile_features({target} PRIVATE cxx_std_17)
+if(MSVC)
+  target_compile_options({target} PRIVATE /utf-8)
+endif()
 target_compile_definitions({target} PRIVATE JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JUCE_VST3_CAN_REPLACE_VST2=0)
 target_compile_definitions({target} PRIVATE SKELL_PRODUCT_VERSION=\\\"${{PROJECT_VERSION}}\\\")
 target_link_libraries({target} PRIVATE SkellCore::DSP SkellCore::UI
@@ -115,6 +118,9 @@ if(SKELLCORE_BUILD_UI_RENDERER)
       SkellCore::DSP juce::juce_audio_utils juce::juce_gui_extra)
   target_compile_definitions({target}UIRenderer PRIVATE JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0)
   target_compile_features({target}UIRenderer PRIVATE cxx_std_17)
+  if(MSVC)
+    target_compile_options({target}UIRenderer PRIVATE /utf-8)
+  endif()
 endif()
 """
         ui_tools = destination / "tools"

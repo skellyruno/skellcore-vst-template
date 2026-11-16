@@ -23,6 +23,10 @@ juce_add_plugin(SkellPlugin
 juce_generate_juce_header(SkellPlugin)
 target_sources(SkellPlugin PRIVATE Source/PluginProcessor.cpp Source/PluginProcessor.h Source/PluginEditor.cpp Source/PluginEditor.h)
 target_compile_features(SkellPlugin PRIVATE cxx_std_17)
+if(MSVC)
+  # JUCE fallback cannot repair Unicode literals corrupted by a Windows codepage.
+  target_compile_options(SkellPlugin PRIVATE /utf-8)
+endif()
 target_compile_definitions(SkellPlugin PUBLIC JUCE_VST3_CAN_REPLACE_VST2=0)
 target_compile_definitions(SkellPlugin PUBLIC SKELL_PRODUCT_VERSION=\"${PROJECT_VERSION}\")
 target_compile_definitions(SkellPlugin PRIVATE JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0)
@@ -42,4 +46,7 @@ if(SKELLCORE_BUILD_UI_RENDERER)
   target_compile_definitions(SkellCoreUISmokeRenderer PRIVATE
     JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0)
   target_compile_features(SkellCoreUISmokeRenderer PRIVATE cxx_std_17)
+  if(MSVC)
+    target_compile_options(SkellCoreUISmokeRenderer PRIVATE /utf-8)
+  endif()
 endif()

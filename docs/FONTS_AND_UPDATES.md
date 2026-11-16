@@ -19,3 +19,5 @@ Only verified stable releases should be published. Self-installing an in-use VST
 Portable: cmake -S SkellCore -B build-core -DSKELLCORE_BUILD_TESTS=ON; cmake --build build-core; ctest --test-dir build-core --output-on-failure -R SkellCoreVersionTests.
 
 JUCE/host gates: build real Windows VST3 and standalone, inspect Quick4 real-editor screenshots for small/default/large layouts and at 125/150/200% scaling, and exercise emoji/symbol display plus version badge on offline, 404, current, newer, and editor-close-during-check paths. FL Studio host is a separate gate. Existing plugins opt in only by pinning a verified SkellCore commit.
+
+Windows source encoding: the MSVC plugin and renderer targets now compile with `/utf-8`. Cross-platform Unicode test glyphs use C++ universal-character-name escapes (for example `\\u2713`) so their bytes are not accidentally decoded through a legacy Windows code page before JUCE receives them. Font fallback is separate from correct UTF-8 decoding: installing more fonts cannot repair already-corrupted source literals. Verify the actual `unicode_ivory_large.png` screenshot after each change.
