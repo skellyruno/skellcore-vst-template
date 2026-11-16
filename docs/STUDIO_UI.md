@@ -75,7 +75,15 @@ The plugin's AUDIO callback must never call UI painting, disk settings storage, 
 1. Pin an immutable SkellCore commit in the plugin's CMake `FetchContent` configuration (or update its vendored SkellCore subtree).
 2. Link `SkellCore::UI`, which already depends on JUCE GUI targets.
 3. Convert the real editor's LookAndFeel and its existing knob components. Preserve editor layout unless the plugin design explicitly changes.
-4. Use a single shared skull master geometry from `SkullTheme.h`; tint it from the selected Studio palette.
+4. Preserve each plugin's existing approved skull artwork and identity. The ecosystem master skull has **not** been approved; do not substitute another plugin's skull or treat `SkullTheme.h` as an approved universal asset. Reusable theme colours and controls may be adopted independently.
 5. Verify real editor screenshots at small/default/large windows and 4 skins, then run VST3 build and host tests.
 
 Do not migrate all independent repos blindly; each editor has its own widget and parameter semantics. The shared system is ready for reuse, but a per-plugin integration change and regression test are still required.
+
+## Font, symbol and emoji acceptance (pre-release UI QA)
+
+Use JUCE's font fallback for missing glyphs; do not assume that one bundled font covers all languages, symbols or emoji. Prefer a verified, legally redistributable font family for branded headings, then use a fallback chain for UI labels and symbols. Treat coloured emoji as platform-dependent: JUCE may render a monochrome fallback or an empty glyph on some Windows configurations. For essential controls, use a vector icon with an accessible text label rather than relying on emoji alone.
+
+For every newly adopted font, document the exact font name, source, license and redistribution permission. Avoid bundling fonts whose license is unknown. Keep font loading and glyph discovery outside the audio callback; cache fonts and avoid per-frame font creation. Do not change parameter IDs or saved-state schemas for typography.
+
+**Acceptance matrix:** render actual compiled editor at compact/default/large sizes on Windows at 100%, 150% and 200% display scaling where available. Check ASCII labels, accented Latin, common symbols (° ± × →), the skull symbol (☠), and a representative emoji (💀) for missing-glyph boxes, clipping, baseline drift, popup overflow and legibility. Verify keyboard focus and text entry; record unsupported glyphs honestly rather than silently replacing the user's text. A successful CMake build alone does not verify font fallback, emoji appearance or real FL Studio rendering.
