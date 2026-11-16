@@ -6,6 +6,7 @@
 #include <SkellCore/StudioUI.h>
 #include <SkellCore/GuidedTour.h>
 #include <SkellCore/FontSystem.h>
+#include <SkellCore/ReleasePolicy.h>
 #include <JuceHeader.h>
 #include <cstdio>
 
@@ -33,7 +34,9 @@ int main(int argc, char** argv) {
 
     // Real JUCE Unicode shaping and preferred symbol/emoji font smoke check.
     const auto font = skellcore::ui::FontSystem::make(17.0f, skellcore::ui::FontRole::Emoji);
-    if (!font.getFallbackEnabled()) {
+    const auto missingFamilyFont = skellcore::ui::FontSystem::make(17.0f,
+        skellcore::ui::FontRole::Symbol, "SkellCore-DefinitelyMissing-Typeface");
+    if (!font.getFallbackEnabled() || !missingFamilyFont.getFallbackEnabled()) {
         std::fprintf(stderr, "Shared emoji font has fallback disabled\n");
         return 1;
     }
@@ -181,11 +184,16 @@ int main(int argc, char** argv) {
     options.inspect = [&editor, &testTour, realKnob] {
         juce::StringArray problems;
         bool hasVersionBadge = false;
+        bool badgeVersionCorrect = false;
         bool hasInitialWorldStatus = false;
         for (int i = 0; i < editor.getNumChildComponents(); ++i) {
             const auto* child = editor.getChildComponent(i);
-            if (child->getComponentID() == "skellcore.version-check")
+            if (child->getComponentID() == "skellcore.version-check") {
                 hasVersionBadge = true;
+                if (const auto* b = dynamic_cast<const juce::TextButton*>(child))
+                    badgeVersionCorrect = b->getButtonText() ==
+                        ("v" + juce::String(SKELL_PRODUCT_VERSION));
+            }
             if (child->getComponentID() == "skellcore.world-status")
                 if (auto* label = dynamic_cast<const juce::Label*>(child))
                     hasInitialWorldStatus = label->getText().isNotEmpty();
@@ -193,6 +201,7 @@ int main(int argc, char** argv) {
                 problems.add("Visible control extends outside window: " + child->getName());
         }
         if (!hasVersionBadge) problems.add("Visible clickable version badge is missing");
+        if (!badgeVersionCorrect) problems.add("Version badge does not match the built product version");
         // Static test for a previously observed white-on-ivory value field.
         if (realKnob->findColour(juce::Slider::textBoxTextColourId) !=
             skellcore::ui::studioPalette(editor.studioSkin()).foreground)

@@ -89,7 +89,7 @@ See [SkellCore/README.md](SkellCore/README.md) and [GitHub migration tracker](ht
 
 ## Shared fonts and version/update controls (opt-in)
 
-The new <SkellCore/FontSystem.h> preserves requested font families and uses JUCE 8 Unicode and installed emoji/symbol font fallbacks. The new <SkellCore/UpdateBadge.h> displays the actual per-product build version and checks published stable releases **only when clicked**; newer releases require confirmation to open the official download page. It does not silently install or alter VST3s. See [fonts and updates integration](docs/FONTS_AND_UPDATES.md).
+The new <SkellCore/FontSystem.h> preserves requested font families and uses JUCE 8 Unicode and installed emoji/symbol font fallbacks. The new <SkellCore/UpdateBadge.h> displays the actual per-product build version and checks published stable releases **only when clicked**; its owned network worker terminates before editor unloading, and the pure <SkellCore/ReleasePolicy.h> classifies offline, rate-limit, malformed/current/newer results. Newer releases require confirmation to open the official download page. It does not silently install or alter VST3s. See [fonts and updates integration](docs/FONTS_AND_UPDATES.md).
 
 ## Studio UI: shared 3D knobs + four skins (opt-in)
 
