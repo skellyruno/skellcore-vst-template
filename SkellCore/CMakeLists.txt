@@ -31,7 +31,18 @@ endif()
 
 option(SKELLCORE_BUILD_TESTS "Build portable SkellCore DSP tests" OFF)
 if(SKELLCORE_BUILD_TESTS)
+  # These legacy test targets contain assert(...). In Release, NDEBUG would
+  # compile those checks away. Un-define it for tests, without affecting the
+  # plug-in/production DSP build (this option is scoped to this directory).
+  if(MSVC)
+    add_compile_options(/UNDEBUG)
+  else()
+    add_compile_options(-UNDEBUG)
+  endif()
   enable_testing()
+  add_executable(SkellCoreAssertionsActiveTests tests/test_assertions_active.cpp)
+  target_link_libraries(SkellCoreAssertionsActiveTests PRIVATE SkellCore::DSP)
+  add_test(NAME SkellCoreAssertionsActiveTests COMMAND SkellCoreAssertionsActiveTests)
   add_executable(SkellCoreAdlibFXTests tests/test_adlib_effects.cpp)
   target_link_libraries(SkellCoreAdlibFXTests PRIVATE SkellCore::DSP)
   add_test(NAME SkellCoreAdlibFXTests COMMAND SkellCoreAdlibFXTests)

@@ -53,6 +53,6 @@ int main() {
   CHECK(classify("1.4.0", "skellyruno", "", 200, "1.5.0") == Result::InvalidConfiguration);
   CHECK(classify("not-version", "skellyruno", "repo", 200, "1.5.0") == Result::InvalidConfiguration);
   CHECK(classify("1.4.0", "skellyruno", "repo/evil", 200, "1.5.0") == Result::InvalidConfiguration);
-  std::puts("Release policy: 37+ explicit offline, security, stability and version checks passed");
+  std::puts("Release policy: offline, security, stability and version checks passed");
   return 0;
 }

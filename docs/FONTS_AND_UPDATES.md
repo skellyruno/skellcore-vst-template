@@ -25,3 +25,7 @@ Windows source encoding: the MSVC plugin and renderer targets now compile with `
 ## Thread lifetime and release safety
 
 An editor owns its network worker and receives updates via `juce::AsyncUpdater` on the UI thread. Destruction joins the worker and cancels queued updates, preventing detached work from continuing after a plug-in unload. No network work happens on audio callbacks. The remote tag is never treated as a URL; GitHub release pages are constructed from locally configured, strictly validated owner/repository and tag parts. The update choice only opens an official HTTPS GitHub release page, never downloads or overwrites a loaded VST3. The JUCE asynchronous confirmation dialog still requires an actual host-level lifecycle test when a DAW editor is closed during the prompt. Do not market automatic installation or FL Studio certification until those checks pass.
+
+## All portable tests are meaningful in Release builds
+
+`SkellCore/CMakeLists.txt` removes `NDEBUG` **only for the SkellCore portable-test directory** when tests are enabled, leaving production plug-in compilation untouched. A `SkellCoreAssertionsActiveTests` compile gate fails if `NDEBUG` remains defined. The historical tests using `assert(...)` now actually exercise their checks on Windows/Linux Release builds; new release and version tests also use unconditional CHECKs. Do not remove the guard without replacing all assertions with unconditional test checks.
