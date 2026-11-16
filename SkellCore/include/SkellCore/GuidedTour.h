@@ -195,8 +195,16 @@ public:
         const auto* secondary = steps_[index_].alsoTarget.getComponent();
         if (isUsable(secondary))
             box = box.getUnion(getLocalArea(secondary, secondary->getLocalBounds()));
-        return box.expanded(6).getIntersection(getLocalBounds().reduced(3));
+        return box.expanded(scaled(6.f)).getIntersection(getLocalBounds().reduced(scaled(3.f)));
     }
+
+    // Only grow the tour on large editor windows. Small production plug-ins
+    // retain their approved compact geometry, while enlarged editors keep
+    // the text and hit targets proportional to the existing scaled controls.
+    float tourScale() const noexcept {
+        return juce::jlimit(1.0f, 1.65f, float(getWidth()) / 1100.0f);
+    }
+    int scaled(float px) const noexcept { return juce::roundToInt(px * tourScale()); }
 
     void resized() override {
         const auto bubble = bubbleBounds();
@@ -215,14 +223,15 @@ public:
         }
         // Compact buttons preserve the reading area and are more proportional
         // to the 13.5pt heading. Keep hit targets at least 24px high.
-        const int edge = juce::jmax(8, juce::jmin(12, bubble.getWidth() / 24));
-        const int buttonHeight = juce::jmin(25, juce::jmax(24, bubble.getHeight() / 6));
+        const int edge = scaled(10.f);
+        const int buttonHeight = scaled(25.f);
         const int rowTop = bubble.getBottom() - edge - buttonHeight;
-        const int available = juce::jmax(1, bubble.getWidth() - edge * 2);
-        const int buttonWidth = juce::jmin(62, juce::jmax(1, (available - 14) / 3));
+        const int buttonWidth = juce::jmin(scaled(62.f),
+            juce::jmax(1, (bubble.getWidth() - edge * 2 - scaled(14.f)) / 3));
+        const int spacing = scaled(7.f);
         next_.setBounds(bubble.getRight() - edge - buttonWidth, rowTop, buttonWidth, buttonHeight);
-        skip_.setBounds(next_.getX() - 7 - buttonWidth, rowTop, buttonWidth, buttonHeight);
-        back_.setBounds(skip_.getX() - 7 - buttonWidth, rowTop, buttonWidth, buttonHeight);
+        skip_.setBounds(next_.getX() - spacing - buttonWidth, rowTop, buttonWidth, buttonHeight);
+        back_.setBounds(skip_.getX() - spacing - buttonWidth, rowTop, buttonWidth, buttonHeight);
     }
 
     void paint(juce::Graphics& g) override {
@@ -251,26 +260,30 @@ public:
         g.drawRoundedRectangle(card.reduced(.7f), 10.f, 1.2f);
         const auto bubble = bubbleBounds();
         const bool compact = bubble.getWidth() < 220;
+        const float sf = tourScale();
         const auto counter = juce::String(static_cast<int>(index_)+1)
                            + " / " + juce::String(static_cast<int>(steps_.size()));
-        const auto head = juce::Rectangle<int>(bubble.getX()+13,
-            bubble.getY()+9, juce::jmax(1, bubble.getWidth()-(compact ? 76 : 62)), 22);
+        const auto head = juce::Rectangle<int>(bubble.getX()+scaled(13.f),
+            bubble.getY()+scaled(9.f),
+            juce::jmax(1, bubble.getWidth()-scaled(compact ? 76.f : 62.f)),
+            scaled(22.f));
         g.setColour(colours_.accent);
-        g.setFont(juce::Font(juce::FontOptions(compact ? 12.0f : 13.5f).withStyle("Bold")));
+        g.setFont(juce::Font(juce::FontOptions((compact ? 12.0f : 13.5f)*sf).withStyle("Bold")));
         g.drawFittedText(steps_[index_].title, head, juce::Justification::centredLeft, 1);
-        auto body = bubble.reduced(13, 0);
-        body.setY(head.getBottom()+(compact ? 16 : 3));
-        body.setBottom(juce::jmax(body.getY(), back_.getY()-8));
+        auto body = bubble.reduced(scaled(13.f), 0);
+        body.setY(head.getBottom()+scaled(compact ? 16.f : 3.f));
+        body.setBottom(juce::jmax(body.getY(), back_.getY()-scaled(8.f)));
         g.setColour(colours_.text);
-        g.setFont(juce::Font(juce::FontOptions(compact ? 11.0f : 11.5f)));
+        g.setFont(juce::Font(juce::FontOptions((compact ? 11.0f : 11.5f)*sf)));
         g.drawFittedText(steps_[index_].description, body,
             juce::Justification::topLeft, 4);
         g.setColour(colours_.secondary);
-        g.setFont(juce::Font(juce::FontOptions(10.f)));
+        g.setFont(juce::Font(juce::FontOptions(10.f*sf)));
         g.drawText(counter,
-            compact ? juce::Rectangle<int>(bubble.getX()+13, bubble.getY()+33,
-                                            juce::jmax(1,bubble.getWidth()-26), 14)
-                    : juce::Rectangle<int>(bubble.getRight()-45, bubble.getY()+9, 32, 22),
+            compact ? juce::Rectangle<int>(bubble.getX()+scaled(13.f), bubble.getY()+scaled(33.f),
+                                            juce::jmax(1,bubble.getWidth()-scaled(26.f)), scaled(14.f))
+                    : juce::Rectangle<int>(bubble.getRight()-scaled(45.f), bubble.getY()+scaled(9.f),
+                                           scaled(32.f), scaled(22.f)),
             compact ? juce::Justification::centredLeft : juce::Justification::centredRight, true);
     }
 
@@ -290,10 +303,10 @@ private:
 
     juce::Rectangle<int> bubbleBounds() const {
         if (getWidth() <= 0 || getHeight() <= 0) return {};
-        int width = juce::jmin(350, juce::jmax(1, getWidth() - 24));
-        int height = juce::jmin(140, juce::jmax(1, getHeight() - 16));
+        int width = juce::jmin(scaled(350.f), juce::jmax(1, getWidth() - scaled(24.f)));
+        int height = juce::jmin(scaled(140.f), juce::jmax(1, getHeight() - scaled(16.f)));
         const auto target = spotlightBounds();
-        constexpr int gap = 8;
+        const int gap = scaled(8.f);
         if (target.isEmpty())
             return { (getWidth()-width)/2, (getHeight()-height)/2, width, height };
 
@@ -315,10 +328,10 @@ private:
         // highlighted control with a centered panel.
         const int sideLeft = juce::jmax(0, target.getX()-2*gap);
         const int sideRight = juce::jmax(0, getWidth()-target.getRight()-2*gap);
-        if (juce::jmax(sideLeft,sideRight) >= 128) {
+        if (juce::jmax(sideLeft,sideRight) >= scaled(128.f)) {
             const bool useRight = sideRight >= sideLeft;
-            width = juce::jmin(280, useRight ? sideRight : sideLeft);
-            height = juce::jmin(150, juce::jmax(1, getHeight()-16));
+            width = juce::jmin(scaled(280.f), useRight ? sideRight : sideLeft);
+            height = juce::jmin(scaled(150.f), juce::jmax(1, getHeight()-scaled(16.f)));
             const int x = useRight ? target.getRight()+gap : target.getX()-gap-width;
             const int y = juce::jlimit(0, juce::jmax(0,getHeight()-height),
                                       target.getCentreY()-height/2);
