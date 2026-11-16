@@ -22,6 +22,7 @@ class GeneratorTests(unittest.TestCase):
             self.assertEqual(len(module.DEFAULT_REV), 40)
             self.assertIn("6e2ba1024bf1", module.DEFAULT_REV)
             self.assertIn('SKELL_PRODUCT_VERSION=\\"', (dest / "CMakeLists.txt").read_text())
+            self.assertIn("PUBLIC SKELL_PRODUCT_VERSION=", (dest / "CMakeLists.txt").read_text())
             self.assertIn("skellcore-vst-template.git", (dest / "CMakeLists.txt").read_text())
             self.assertIn("SkellCompressorAudioProcessor", (dest / "Source" / "PluginProcessor.cpp").read_text())
             self.assertIn('skell.skellcompressor', (dest / "Source" / "PluginProcessor.h").read_text())

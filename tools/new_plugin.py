@@ -103,7 +103,7 @@ if(MSVC)
   target_compile_options({target} PRIVATE /utf-8)
 endif()
 target_compile_definitions({target} PRIVATE JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JUCE_VST3_CAN_REPLACE_VST2=0)
-target_compile_definitions({target} PRIVATE SKELL_PRODUCT_VERSION=\\\"${{PROJECT_VERSION}}\\\")
+target_compile_definitions({target} PUBLIC SKELL_PRODUCT_VERSION=\\\"${{PROJECT_VERSION}}\\\")
 target_link_libraries({target} PRIVATE SkellCore::DSP SkellCore::UI
     juce::juce_audio_utils juce::juce_audio_processors juce::juce_gui_extra)
 '''
