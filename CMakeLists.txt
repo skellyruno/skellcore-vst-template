@@ -24,6 +24,7 @@ juce_generate_juce_header(SkellPlugin)
 target_sources(SkellPlugin PRIVATE Source/PluginProcessor.cpp Source/PluginProcessor.h Source/PluginEditor.cpp Source/PluginEditor.h)
 target_compile_features(SkellPlugin PRIVATE cxx_std_17)
 target_compile_definitions(SkellPlugin PUBLIC JUCE_VST3_CAN_REPLACE_VST2=0)
+target_compile_definitions(SkellPlugin PUBLIC SKELL_QUICKSTART_VERSION=\"${PROJECT_VERSION}\")
 target_compile_definitions(SkellPlugin PRIVATE JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0)
 target_link_libraries(SkellPlugin PRIVATE juce::juce_audio_utils juce::juce_audio_processors juce::juce_gui_extra)
 

@@ -85,6 +85,10 @@ This is **v0.3 shared-core work**. Source import does not automatically migrate 
 
 See [SkellCore/README.md](SkellCore/README.md) and [GitHub migration tracker](https://github.com/skellyruno/skellcore-vst-template/issues/2).
 
+## Shared fonts and version/update controls (opt-in)
+
+The new <SkellCore/FontSystem.h> preserves requested font families and uses JUCE 8 Unicode and installed emoji/symbol font fallbacks. The new <SkellCore/UpdateBadge.h> displays the actual per-product build version and checks published stable releases **only when clicked**; newer releases require confirmation to open the official download page. It does not silently install or alter VST3s. See [fonts and updates integration](docs/FONTS_AND_UPDATES.md).
+
 ## Studio UI: shared 3D knobs + four skins (opt-in)
 
 The quickstart editor demonstrates the new `<SkellCore/StudioUI.h>` components: a subtle raised-metal 3D rotary LookAndFeel, double-click-to-reset and editable-value knobs, and four consistent plugin skins (**Ivory, Obsidian, Amethyst, Crimson**). Skin choice persists as a *user appearance preference* across SKELL plugins adopting this module; it never changes audio processing or project parameters. The existing SkellCore UI API remains available.

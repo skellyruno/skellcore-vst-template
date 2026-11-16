@@ -5,6 +5,7 @@
 #include <SkellCore/HeadlessUIRenderer.h>
 #include <SkellCore/StudioUI.h>
 #include <SkellCore/GuidedTour.h>
+#include <SkellCore/FontSystem.h>
 #include <JuceHeader.h>
 #include <cstdio>
 
@@ -13,6 +14,18 @@ int main(int argc, char** argv) {
     SkellAudioProcessor processor;
     processor.prepareToPlay(48000.0, 512);
     SkellAudioProcessorEditor editor(processor);
+
+    // Real JUCE Unicode shaping and preferred symbol/emoji font smoke check.
+    const auto font = skellcore::ui::FontSystem::make(17.0f, skellcore::ui::FontRole::Emoji);
+    if (!font.getFallbackEnabled()) {
+        std::fprintf(stderr, "Shared emoji font has fallback disabled\n");
+        return 1;
+    }
+    juce::Image glyphProbe(juce::Image::ARGB, 360, 48, true);
+    juce::Graphics glyphGraphics(glyphProbe);
+    glyphGraphics.setFont(font);
+    glyphGraphics.setColour(juce::Colours::white);
+    glyphGraphics.drawSingleLineText(juce::String::fromUTF8("♪ ✓ → ⚙ 🎹"), 8, 30);
 
     // Test converted coordinate handling through a nested JUCE component
     // and a per-step panel activation callback without touching plugin DSP.
@@ -147,11 +160,15 @@ int main(int argc, char** argv) {
     };
     options.inspect = [&editor, &testTour] {
         juce::StringArray problems;
+        bool hasVersionBadge = false;
         for (int i = 0; i < editor.getNumChildComponents(); ++i) {
             const auto* child = editor.getChildComponent(i);
+            if (child->getComponentID() == "skellcore.version-check")
+                hasVersionBadge = true;
             if (child->isVisible() && !editor.getLocalBounds().contains(child->getBounds()))
                 problems.add("Visible control extends outside window: " + child->getName());
         }
+        if (!hasVersionBadge) problems.add("Visible clickable version badge is missing");
         if (const auto* overlay = testTour.overlay()) {
             if (overlay->informationBounds().intersects(overlay->spotlightBounds()))
                 problems.add("GuidedTour info panel overlaps spotlight target");
