@@ -5,13 +5,15 @@ SkellAudioProcessorEditor::SkellAudioProcessorEditor(SkellAudioProcessor& p)
     : AudioProcessorEditor(&p),
       skin_(skellcore::ui::StudioSkinStore::load()),
       world_(p.worldLink),
+      versionBadge_("Skell Quickstart", SKELL_PRODUCT_VERSION,
+                    "skellyruno", "skellcore-vst-template"),
       gainAttachment(p.parameters, "gain", gain) {
   setLookAndFeel(&skin_);
   setResizable(true, true);
   setResizeLimits(390, 250, 840, 560);
 
   title.setText("Skell Quickstart", juce::dontSendNotification);
-  title.setFont(juce::Font(juce::FontOptions(22.0f).withStyle("Bold")));
+  title.setFont(skellcore::ui::FontSystem::make(22.0f, skellcore::ui::FontRole::Heading, {}, true));
   title.setJustificationType(juce::Justification::centredLeft);
 
   // Does not change the gain APVTS range, parameter ID, automation or DSP.
@@ -43,10 +45,14 @@ SkellAudioProcessorEditor::SkellAudioProcessorEditor(SkellAudioProcessor& p)
     else world_.join(); // explicit only: never join at plugin load
     timerCallback();
   };
+  worldStatus_.setComponentID("skellcore.world-status");
   worldStatus_.setJustificationType(juce::Justification::centredLeft);
-  worldStatus_.setFont(juce::Font(juce::FontOptions(11.0f)));
+  worldStatus_.setFont(skellcore::ui::FontSystem::make(11.0f));
   addAndMakeVisible(worldButton_);
   addAndMakeVisible(worldStatus_);
+  versionBadge_.setColour(juce::TextButton::textColourOffId, skin_.palette().secondary);
+  addAndMakeVisible(versionBadge_);
+  timerCallback(); // Populate OFFLINE/ONLINE on the very first paint.
   startTimerHz(4); // UI/status only, never processBlock
   setSize(480, 330);
 }
@@ -66,6 +72,15 @@ void SkellAudioProcessorEditor::setStudioSkin(skellcore::ui::StudioSkin selectio
   }
   skinSelector_.setSelectedId(static_cast<int>(selection) + 1,
                               juce::dontSendNotification);
+  // JUCE's Slider owns a nested editable TextEditor that can retain the
+  // previous skin's text colour across the first immediate snapshot.
+  // Pin all three colours at the Slider level on every skin change.
+  const auto p = skin_.palette();
+  gain.setColour(juce::Slider::textBoxTextColourId, p.foreground);
+  gain.setColour(juce::Slider::textBoxBackgroundColourId, p.surface);
+  gain.setColour(juce::Slider::textBoxOutlineColourId, p.border);
+  versionBadge_.setColour(juce::TextButton::textColourOffId, p.secondary);
+  worldStatus_.setColour(juce::Label::textColourId, p.secondary);
   if (persist)
     (void) skellcore::ui::StudioSkinStore::save(selection);
   repaint();
@@ -86,17 +101,17 @@ void SkellAudioProcessorEditor::paint(juce::Graphics& g) {
 
   // Shared skull-key geometry, same branding across all four skins.
   skellcore::ui::drawSkullKeyMark(g, 25.f, 15.f, theme.accent, theme.surface);
-  g.setFont(juce::Font(juce::FontOptions(11.0f).withStyle("Bold")));
+  g.setFont(skellcore::ui::FontSystem::make(11.0f, skellcore::ui::FontRole::Heading, {}, true));
   g.setColour(theme.secondary);
   g.drawFittedText("SKELLCORE  /  VST TEMPLATE",
-      30, 25, getWidth()-60, 18,
+      105, 25, getWidth()-207, 18,
       juce::Justification::centredRight, 1);
   g.setColour(theme.accent);
-  g.setFont(juce::Font(juce::FontOptions(12.5f).withStyle("Bold")));
+  g.setFont(skellcore::ui::FontSystem::make(12.5f, skellcore::ui::FontRole::Heading, {}, true));
   g.drawFittedText("GAIN", getWidth()/2 - 58, 80, 116, 18,
                    juce::Justification::centred, 1);
   g.setColour(theme.secondary);
-  g.setFont(juce::Font(juce::FontOptions(10.0f)));
+  g.setFont(skellcore::ui::FontSystem::make(10.0f, skellcore::ui::FontRole::Symbol));
   g.drawFittedText("SKELLWORLD  |  OPTIONAL LOCAL CONNECTION",
       28, getHeight() - 31, getWidth()-56, 16, juce::Justification::centred, 1);
 }
@@ -106,6 +121,7 @@ void SkellAudioProcessorEditor::resized() {
   title.setBounds(30, 48, w-198, 30);
   skinSelector_.setBounds(w-158, 49, 126, 27);
   skullMark_.setBounds(24, 14, 76, 34);
+  versionBadge_.setBounds(w-92, 23, 64, 22);
   const int knobSize = juce::jmin(156, juce::jmax(70, h-195));
   gain.setBounds((w-knobSize)/2, 103, knobSize, knobSize);
   worldButton_.setBounds(w/2 - 151, h-77, 122, 29);

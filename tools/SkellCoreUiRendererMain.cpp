@@ -5,6 +5,8 @@
 #include <SkellCore/HeadlessUIRenderer.h>
 #include <SkellCore/StudioUI.h>
 #include <SkellCore/GuidedTour.h>
+#include <SkellCore/FontSystem.h>
+#include <SkellCore/ReleasePolicy.h>
 #include <JuceHeader.h>
 #include <cstdio>
 
@@ -13,6 +15,36 @@ int main(int argc, char** argv) {
     SkellAudioProcessor processor;
     processor.prepareToPlay(48000.0, 512);
     SkellAudioProcessorEditor editor(processor);
+
+    // A render-only JUCE label in the real editor, used for font QA only.
+    juce::Label unicodeProbe;
+    unicodeProbe.setText(juce::String::fromUTF8(u8"SKELL  \u2713  \u266A  \u2192  \u2699  \u2605  \u2620  \U0001F3B9  \U0001FA7B"),
+                         juce::dontSendNotification);
+    unicodeProbe.setFont(skellcore::ui::FontSystem::make(20.f,
+                            skellcore::ui::FontRole::Emoji));
+    unicodeProbe.setJustificationType(juce::Justification::centred);
+    unicodeProbe.setComponentID("skellcore.font-emoji-probe");
+    if (!unicodeProbe.getText().containsChar(static_cast<juce_wchar>(0x2713)) ||
+        !unicodeProbe.getText().containsChar(static_cast<juce_wchar>(0x2699))) {
+        std::fprintf(stderr, "Unicode input was decoded incorrectly before drawing\\n");
+        return 1;
+    }
+    editor.addAndMakeVisible(unicodeProbe);
+    unicodeProbe.setVisible(false);
+
+    // Real JUCE Unicode shaping and preferred symbol/emoji font smoke check.
+    const auto font = skellcore::ui::FontSystem::make(17.0f, skellcore::ui::FontRole::Emoji);
+    const auto missingFamilyFont = skellcore::ui::FontSystem::make(17.0f,
+        skellcore::ui::FontRole::Symbol, "SkellCore-DefinitelyMissing-Typeface");
+    if (!font.getFallbackEnabled() || !missingFamilyFont.getFallbackEnabled()) {
+        std::fprintf(stderr, "Shared emoji font has fallback disabled\n");
+        return 1;
+    }
+    juce::Image glyphProbe(juce::Image::ARGB, 360, 48, true);
+    juce::Graphics glyphGraphics(glyphProbe);
+    glyphGraphics.setFont(font);
+    glyphGraphics.setColour(juce::Colours::white);
+    glyphGraphics.drawSingleLineText(juce::String::fromUTF8(u8"\u266A \u2713 \u2192 \u2699 \U0001F3B9"), 8, 30);
 
     // Test converted coordinate handling through a nested JUCE component
     // and a per-step panel activation callback without touching plugin DSP.
@@ -133,25 +165,48 @@ int main(int argc, char** argv) {
         {"obsidian_large",  840, 560, 1},
         {"tour_ivory_default", 480, 330, 0, 1},
         {"tour_obsidian_small", 390, 250, 1, 1},
-        {"tour_amethyst_large", 840, 560, 2, 1}
+        {"tour_amethyst_large", 840, 560, 2, 1},
+        {"unicode_ivory_large", 840, 560, 0, 2}
     };
-    options.configure = [&editor, &testTour](const skellcore::ui::headless::Scene& scene) {
+    options.configure = [&editor, &testTour, &unicodeProbe](const skellcore::ui::headless::Scene& scene) {
+        unicodeProbe.setVisible(scene.mode == 2);
+        unicodeProbe.setBounds((scene.width - 520) / 2, 315, 520, 38);
         testTour.dismiss();
         const auto selection = skellcore::ui::studioSkinFromIndex(scene.theme);
         editor.setStudioSkin(selection, false);
         const auto p = skellcore::ui::studioPalette(selection);
+        unicodeProbe.setColour(juce::Label::textColourId, p.foreground);
         testTour.setPalette({p.accent, p.surface, p.foreground, p.secondary,
                              juce::Colour(0xd9000000)});
         if (scene.mode == 1 && !testTour.replay())
             std::fprintf(stderr, "Tour did not show in renderer scene\n");
     };
-    options.inspect = [&editor, &testTour] {
+    options.inspect = [&editor, &testTour, realKnob] {
         juce::StringArray problems;
+        bool hasVersionBadge = false;
+        bool badgeVersionCorrect = false;
+        bool hasInitialWorldStatus = false;
         for (int i = 0; i < editor.getNumChildComponents(); ++i) {
             const auto* child = editor.getChildComponent(i);
+            if (child->getComponentID() == "skellcore.version-check") {
+                hasVersionBadge = true;
+                if (const auto* b = dynamic_cast<const juce::TextButton*>(child))
+                    badgeVersionCorrect = b->getButtonText() ==
+                        ("v" + juce::String(SKELL_PRODUCT_VERSION));
+            }
+            if (child->getComponentID() == "skellcore.world-status")
+                if (auto* label = dynamic_cast<const juce::Label*>(child))
+                    hasInitialWorldStatus = label->getText().isNotEmpty();
             if (child->isVisible() && !editor.getLocalBounds().contains(child->getBounds()))
                 problems.add("Visible control extends outside window: " + child->getName());
         }
+        if (!hasVersionBadge) problems.add("Visible clickable version badge is missing");
+        if (!badgeVersionCorrect) problems.add("Version badge does not match the built product version");
+        // Static test for a previously observed white-on-ivory value field.
+        if (realKnob->findColour(juce::Slider::textBoxTextColourId) !=
+            skellcore::ui::studioPalette(editor.studioSkin()).foreground)
+            problems.add("Gain text box colour does not match active skin");
+        if (!hasInitialWorldStatus) problems.add("World status is blank on initial editor paint");
         if (const auto* overlay = testTour.overlay()) {
             if (overlay->informationBounds().intersects(overlay->spotlightBounds()))
                 problems.add("GuidedTour info panel overlaps spotlight target");
@@ -168,7 +223,8 @@ int main(int argc, char** argv) {
         {"amethyst_default", "crimson_default"},
         {"ivory_default", "tour_ivory_default"},
         {"obsidian_small", "tour_obsidian_small"},
-        {"tour_ivory_default", "tour_obsidian_small"}
+        {"tour_ivory_default", "tour_obsidian_small"},
+        {"ivory_large", "unicode_ivory_large"}
     };
 
     const auto directory = argc > 1

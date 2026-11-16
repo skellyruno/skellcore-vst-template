@@ -31,10 +31,28 @@ endif()
 
 option(SKELLCORE_BUILD_TESTS "Build portable SkellCore DSP tests" OFF)
 if(SKELLCORE_BUILD_TESTS)
+  # The CMake Release defaults define NDEBUG, which would remove legacy
+  # assert() checks. Remove that definition from this test directory's
+  # configuration rather than add /UNDEBUG after /DNDEBUG (MSVC D9025 warning).
+  # This subdirectory-scope change never affects the host plug-in's targets.
+  if(MSVC)
+    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+  else()
+    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+  endif()
   enable_testing()
+  add_executable(SkellCoreAssertionsActiveTests tests/test_assertions_active.cpp)
+  target_link_libraries(SkellCoreAssertionsActiveTests PRIVATE SkellCore::DSP)
+  add_test(NAME SkellCoreAssertionsActiveTests COMMAND SkellCoreAssertionsActiveTests)
   add_executable(SkellCoreAdlibFXTests tests/test_adlib_effects.cpp)
   target_link_libraries(SkellCoreAdlibFXTests PRIVATE SkellCore::DSP)
   add_test(NAME SkellCoreAdlibFXTests COMMAND SkellCoreAdlibFXTests)
+  add_executable(SkellCoreReleasePolicyTests tests/test_release_policy.cpp)
+  target_link_libraries(SkellCoreReleasePolicyTests PRIVATE SkellCore::DSP)
+  add_test(NAME SkellCoreReleasePolicyTests COMMAND SkellCoreReleasePolicyTests)
+  add_executable(SkellCoreVersionTests tests/test_version.cpp)
+  target_link_libraries(SkellCoreVersionTests PRIVATE SkellCore::DSP)
+  add_test(NAME SkellCoreVersionTests COMMAND SkellCoreVersionTests)
   add_executable(SkellCoreTests tests/test_core.cpp)
   target_link_libraries(SkellCoreTests PRIVATE SkellCore::DSP)
   add_test(NAME SkellCoreTests COMMAND SkellCoreTests)
