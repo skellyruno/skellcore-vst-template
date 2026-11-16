@@ -26,7 +26,7 @@ jobs:
       - name: Verify generated CMake and actual JUCE editor source
         run: cmake -S generated-smoke -B build-generated -A x64 -DSKELLCORE_BUILD_UI_RENDERER=ON -DFETCHCONTENT_SOURCE_DIR_SKELLCORE="${{ github.workspace }}"
       - name: Compile real generated Windows VST3 and editor renderer
-        run: cmake --build build-generated --config Release --target SkellGenerated SkellGeneratedUIRenderer --parallel 2
+        run: cmake --build build-generated --config Release --target SkellGenerated_VST3 SkellGeneratedUIRenderer --parallel 2
       - name: Verify VST3 binary and capture real generated editor
         shell: pwsh
         run: |
