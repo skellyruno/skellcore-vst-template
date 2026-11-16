@@ -173,7 +173,7 @@ int main(int argc, char** argv) {
         if (scene.mode == 1 && !testTour.replay())
             std::fprintf(stderr, "Tour did not show in renderer scene\n");
     };
-    options.inspect = [&editor, &testTour] {
+    options.inspect = [&editor, &testTour, realKnob] {
         juce::StringArray problems;
         bool hasVersionBadge = false;
         bool hasInitialWorldStatus = false;
@@ -188,6 +188,10 @@ int main(int argc, char** argv) {
                 problems.add("Visible control extends outside window: " + child->getName());
         }
         if (!hasVersionBadge) problems.add("Visible clickable version badge is missing");
+        // Static test for a previously observed white-on-ivory value field.
+        if (realKnob->findColour(juce::Slider::textBoxTextColourId) !=
+            skellcore::ui::studioPalette(editor.studioSkin()).foreground)
+            problems.add("Gain text box colour does not match active skin");
         if (!hasInitialWorldStatus) problems.add("World status is blank on initial editor paint");
         if (const auto* overlay = testTour.overlay()) {
             if (overlay->informationBounds().intersects(overlay->spotlightBounds()))

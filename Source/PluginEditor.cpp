@@ -72,7 +72,15 @@ void SkellAudioProcessorEditor::setStudioSkin(skellcore::ui::StudioSkin selectio
   }
   skinSelector_.setSelectedId(static_cast<int>(selection) + 1,
                               juce::dontSendNotification);
-  versionBadge_.setColour(juce::TextButton::textColourOffId, skin_.palette().secondary);
+  // JUCE's Slider owns a nested editable TextEditor that can retain the
+  // previous skin's text colour across the first immediate snapshot.
+  // Pin all three colours at the Slider level on every skin change.
+  const auto p = skin_.palette();
+  gain.setColour(juce::Slider::textBoxTextColourId, p.foreground);
+  gain.setColour(juce::Slider::textBoxBackgroundColourId, p.surface);
+  gain.setColour(juce::Slider::textBoxOutlineColourId, p.border);
+  versionBadge_.setColour(juce::TextButton::textColourOffId, p.secondary);
+  worldStatus_.setColour(juce::Label::textColourId, p.secondary);
   if (persist)
     (void) skellcore::ui::StudioSkinStore::save(selection);
   repaint();
