@@ -5,11 +5,31 @@
 #include <SkellCore/HeadlessUIRenderer.h>
 #include <SkellCore/StudioUI.h>
 #include <SkellCore/GuidedTour.h>
+#include <SkellCore/RuneGlyphArtwork.h>
 #include <JuceHeader.h>
 #include <cstdio>
 
 int main(int argc, char** argv) {
     juce::ScopedJuceInitialiser_GUI juceGui;
+    // Compile and rasterize the NEW shared Egyptian symbols through the
+    // actual Windows JUCE GUI renderer, without altering any editor scene.
+    // The renderer still exports the same thirteen real editor screenshots.
+    const auto runeAtlas=skellcore::ui::runes::egyptianOnlyAtlas();
+    if(runeAtlas.getWidth()!=256 || runeAtlas.getHeight()!=256) {
+        std::fprintf(stderr,"Shared rune atlas has invalid dimensions\n");
+        return 2;
+    }
+    for(int index=40;index<64;++index) {
+        int filled=0;
+        for(int y=(index/8)*32;y<(index/8+1)*32;++y)
+            for(int x=(index%8)*32;x<(index%8+1)*32;++x)
+                if(runeAtlas.getPixelAt(x,y).getAlpha()>32)++filled;
+        if(filled<12) {
+            std::fprintf(stderr,"Shared rune glyph %d has no visible line art\n",index);
+            return 3;
+        }
+    }
+    std::printf("SkellCore rune atlas: 24/24 Egyptian signs rendered by JUCE\n");
     SkellAudioProcessor processor;
     processor.prepareToPlay(48000.0, 512);
     SkellAudioProcessorEditor editor(processor);

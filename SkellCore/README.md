@@ -102,3 +102,7 @@ Use `#include <SkellCore/StudioUI.h>` for the shared `StudioLookAndFeel`, four s
 ### Guided Tours (optional, only for complex editors)
 
 Include `<SkellCore/GuidedTour.h>` and instantiate `skellcore::ui::GuidedTourController` **in the JUCE editor** to recreate OmniChoir-style first-run spotlight onboarding with Back/Next/Skip/replay. It persists completion per plugin/version outside presets, handles nested/tabs with safe target pointers, supports the shared four skins, and never touches the audio thread. See [the integration guide](../docs/GUIDED_TOURS.md). The quickstart template does not enable tours automatically.
+
+## Original Egyptian rune UI library
+
+See [Rune Library](../docs/RUNE_LIBRARY.md): reusable vector signs, orbit geometry and frame pacing.
