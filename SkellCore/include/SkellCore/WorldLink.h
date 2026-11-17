@@ -6,6 +6,13 @@
 #include <SkellCore/WorldTuning.h>
 #include <SkellCore/LocalTuningBus.h>
 #include <juce_core/juce_core.h>
+#if defined(_WIN32)
+ #include <winsock2.h>
+#else
+ #include <netinet/in.h>
+ #include <netinet/tcp.h>
+ #include <sys/socket.h>
+#endif
 #include <atomic>
 #include <array>
 #include <string>
@@ -110,6 +117,23 @@ public:
     }
 
 private:
+    // Small SW1 frames are sent by this worker, never by processBlock().
+    // Disable Nagle on the client side as well as the hub's accepted sockets.
+    // Failure is non-fatal: the optional informational link must still connect.
+    static void enableTcpNoDelay(juce::StreamingSocket& socket) noexcept {
+        const int handle = socket.getRawSocketHandle();
+        if (handle < 0) return;
+        const int enabled = 1;
+#if defined(_WIN32)
+        (void)::setsockopt(static_cast<SOCKET>(handle), IPPROTO_TCP, TCP_NODELAY,
+                           reinterpret_cast<const char*>(&enabled),
+                           static_cast<int>(sizeof(enabled)));
+#else
+        (void)::setsockopt(handle, IPPROTO_TCP, TCP_NODELAY, &enabled,
+                           static_cast<socklen_t>(sizeof(enabled)));
+#endif
+    }
+
     bool send(juce::StreamingSocket& socket, const Frame& frame) {
         std::array<char,maxLine> line{};
         std::size_t length=0;
@@ -198,6 +222,7 @@ private:
             for(auto& item:peerInfo_) item=Frame{};
             juce::StreamingSocket socket;
             if (socket.connect("127.0.0.1",defaultPort,500)) {
+                enableTcpNoDelay(socket);
                 Frame hello;
                 if (make(hello,Kind::Hello,instance_,product_,display_) &&
                     send(socket,hello)) {
