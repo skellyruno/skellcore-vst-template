@@ -15,6 +15,8 @@ if(TARGET juce::juce_gui_basics)
   target_compile_features(SkellCoreUI INTERFACE cxx_std_17)
   target_include_directories(SkellCoreUI INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
   target_link_libraries(SkellCoreUI INTERFACE juce::juce_gui_basics juce::juce_audio_processors)
+  target_sources(SkellCoreUI INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/WorldLinkSocketOptions.cpp>)
 endif()
 
 # Editor screenshot utility: optional; the portable DSP targets remain JUCE-free.
