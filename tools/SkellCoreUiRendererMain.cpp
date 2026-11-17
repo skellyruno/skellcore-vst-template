@@ -145,8 +145,13 @@ int main(int argc, char** argv) {
         if (scene.mode == 1 && !testTour.replay())
             std::fprintf(stderr, "Tour did not show in renderer scene\n");
     };
-    options.inspect = [&editor, &testTour] {
+    options.inspect = [&editor, &testTour, &realKnob] {
         juce::StringArray problems;
+        const auto palette = skellcore::ui::studioPalette(editor.studioSkin());
+        if (realKnob->findColour(juce::Slider::textBoxTextColourId) != palette.foreground
+            || realKnob->findColour(juce::Slider::textBoxBackgroundColourId) != palette.surface
+            || realKnob->findColour(juce::Slider::textBoxOutlineColourId) != palette.border)
+            problems.add("Gain value box colours do not match the active Studio skin");
         for (int i = 0; i < editor.getNumChildComponents(); ++i) {
             const auto* child = editor.getChildComponent(i);
             if (child->isVisible() && !editor.getLocalBounds().contains(child->getBounds()))
