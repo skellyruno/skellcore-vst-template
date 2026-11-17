@@ -18,6 +18,7 @@ public:
 
 private:
   void timerCallback() override;
+  void applyStudioKnobColours();
   skellcore::ui::StudioLookAndFeel skin_;
   skellcore::world::WorldLink& world_;
   // A transparent hit target over the vector skull-key mark; no extra UI chrome.
