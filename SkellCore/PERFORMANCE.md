@@ -6,10 +6,10 @@ SkellCore DSP is for real-time audio. No heap allocation, file reads, mutexes or
 
 | Profile | Interpolation detector work per stereo sample | Purpose |
 | --- | ---: | --- |
-| Economy | 2 phases x 8 taps x 2 channels = 32 multiply-accumulate iterations | Lower-cost preview and many-instance chains |
-| Standard (default) | 4 phases x 16 taps x 2 channels = 128 iterations | Detection unchanged; gain stage rewritten in v0.6.1 (see below) |
+| Economy | 8 phases x 32 taps x 2 channels = 512 multiply-accumulate iterations | Lower-cost profile relative to Standard |
+| Standard (default) | 16 phases x 32 taps x 2 channels = 1024 iterations | Higher-resolution inter-sample detection |
 
-Economy reduces detector arithmetic, **not** total plugin CPU by exactly 75%. Neither profile is certified BS.1770 true-peak compliant. For final mastering, the limiter requires further verification with intersample peak reference vectors. The sampling latency remains 3 ms in either profile. Always report limiter.latencySamples() to the host during preparation.
+Economy uses half the interpolation phases of Standard; it is not a low-cost substitute for the previous v0.6.1 detector. The v0.7 release-candidate detector uses 8x32 (Economy) or 16x32 (Standard) windowed-sinc phases. A separate 16-phase / 64-tap Blackman-windowed reconstruction regression now exercises 44.1, 48 and 96 kHz at 7 kHz, 13.517 kHz and 0.435 x sample rate with periodic transient spikes. Its current limits are 0.11 dB above the requested ceiling for Economy and 0.03 dB for Standard. This is a bounded regression reference, **not** BS.1770 true-peak certification. Relative to the previous 2x8 / 4x16 detector, interpolation work increases 16x for Economy and 8x for Standard; inspect the exact-head benchmark and measure on target hardware before adoption. Sampling latency remains 3 ms in either profile. Always report limiter.latencySamples() to the host during preparation.
 
 Choose the profile in prepareToPlay while stopped (do not change quality within audio callback):
 
@@ -27,7 +27,7 @@ Choose the profile in prepareToPlay while stopped (do not change quality within 
 - UI GlowCache rejects abnormal image sizes (>1,572,864 pixels or >2,048 on an axis) and reuses identical cached images, preventing huge memory allocations during resize.
 - Existing Release-mode tests have NDEBUG explicitly undefined so assert() actually tests behavior in CI.
 - A low-CPU safety regression checks no new/delete calls from reverb/limiter processing, multiple rates, NaN/Inf input and unprepared processing.
-- `tests/test_limiter_parity.cpp` (name kept for build files) now checks the limiter's guarantees at 44.1/48/96/192 kHz, both qualities, three ceilings: output never exceeds the ceiling (plus a 0.15% interpolation allowance), bit-exact delayed passthrough below the ceiling, a ramped attack, and NaN/Inf/mono robustness. The previous cross-check against a copy of the old limiter was retired because the old algorithm was the bug.
+- `tests/test_limiter_parity.cpp` (name kept for build files) checks sample-domain ceiling, bit-exact delayed passthrough below the ceiling, a ramped attack, and NaN/Inf/mono robustness. `tests/test_limiter_true_peak.cpp` independently reconstructs 16 fractional phases with a 64-tap Blackman window and checks the inter-sample overshoot budget at 44.1/48/96 kHz for both qualities. The previous cross-check against a copy of the old limiter was retired because the old algorithm was the bug.
 
 ## CPU measurements
 

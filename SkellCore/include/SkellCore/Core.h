@@ -178,7 +178,7 @@ private:
     std::array<float, 4> feedback_ {}, dampingState_ {};
 };
 
-// Interpolated-peak lookahead limiter (Standard 4x, Economy 2x).
+// Interpolated-peak lookahead limiter (Standard 16x32, Economy 8x32).
 // Neither quality is BS.1770-certified.
 // Gain is the sliding minimum of the required gain over the whole lookahead window, smoothed by a boxcar
 // of matching length, so every sample leaves the limiter with a gain that is <= what it needs (no
@@ -187,7 +187,7 @@ private:
 // Host must report latencySamples() for delay compensation. Processes mono/stereo.
 class TruePeakLimiter {
 public:
-    // Economy: 2 interpolated phases x 8 taps. Standard: 4 x 16.
+    // Economy: 8 interpolated phases x 32 taps. Standard: 16 x 32.
     // Neither mode is yet BS.1770 true-peak certified.
     enum class Quality { Economy, Standard };
     void prepare(double sampleRate, int channels = 2, Quality quality = Quality::Standard) {
@@ -195,8 +195,8 @@ public:
         rate_ = detail::safeSampleRate(sampleRate);
         channels_ = std::clamp(channels, 1, 2);
         quality_ = quality;
-        activeTaps_ = quality == Quality::Economy ? 8 : taps;
-        activePhases_ = quality == Quality::Economy ? 2 : 4;
+        activeTaps_ = taps;
+        activePhases_ = quality == Quality::Economy ? 8 : maxPhases;
         delaySamples_ = std::max(48, static_cast<int>(rate_ * .003));
         for (auto& b : delay_) b.assign(static_cast<std::size_t>(delaySamples_) + 1, 0.f);
         for (auto& k : kernel_) k.fill(0.0);
@@ -316,10 +316,11 @@ public:
         write_ = next;
     }
 private:
-    static constexpr int taps = 16;
+    static constexpr int taps = 32;
+    static constexpr int maxPhases = 16;
     double rate_ = 48000.0, ceiling_ = .891250938, gain_ = 1.0, releasePole_ = .999;
     int channels_ = 2, delaySamples_ = 144, hold_ = 0, historyWrite_ = 0;
-    int activeTaps_ = taps, activePhases_ = 4;
+    int activeTaps_ = taps, activePhases_ = maxPhases;
     int windowLen_ = 145, boxLen_ = 135;
     std::size_t write_ = 0, dqHead_ = 0, dqCount_ = 0, boxPos_ = 0;
     std::int64_t now_ = 0;
@@ -331,7 +332,7 @@ private:
     Quality quality_ = Quality::Standard;
     std::array<std::vector<float>, 2> delay_;
     std::array<std::array<double, taps * 2>, 2> history_ {};
-    std::array<std::array<double, taps>, 4> kernel_ {};
+    std::array<std::array<double, taps>, maxPhases> kernel_ {};
 };
 
 // Stable adapter boundary for a validated pitch/formant backend (e.g. SkellyTune).

@@ -8,7 +8,7 @@ Portable C++17 DSP and optional JUCE 8 UI targets. This is an **initial tested f
 | `PhraseTracker`, `OnsetDetector` | Portable tests pass | Lightweight envelope-based segment/onset cues; not language-aware |
 | `FDNReverb` | Portable tests pass | Four-delay Hadamard feedback network (new algorithm; no claim it matches existing reverb) |
 | `FDNReverb8`, `FDNReverb16` (`<SkellCore/FDN.h>`, `BandFDN<N>`) | Portable tests pass (RT60 per band, density, stereo, robustness, no allocation) | 8 or 16 lines, Householder feedback, prime delay lengths over a configurable range (`prepare(rate, minMs, maxMs)`), separate low- and high-band decay (`setParameters(decayLow, decayHigh, wet)`). Same real-time rules as `FDNReverb`, which is unchanged |
-| `TruePeakLimiter` | Portable ceiling/transparency/robustness tests pass (gain stage rewritten in v0.6.1) | Standard 4x/16-tap or opt-in Economy 2x/8-tap interpolation. **Neither mode is true-peak certified.** |
+| `TruePeakLimiter` | Portable ceiling/transparency/robustness plus independent inter-sample regression | Standard 16x32 or opt-in Economy 8x32 interpolation. **Neither mode is BS.1770-certified.** |
 | `PitchFormantEngine` | Imported SkellyTune backend available | Adapter keeps original engine available without silently changing existing plugins; dry pass-through until attached |
 | `ui::Theme`, `ui::LookAndFeel`, `ui::GlowCache` | Windows JUCE VST3 build verified | Reusable skin and bounded glow cache. Existing plugin UIs unchanged |
 
@@ -53,7 +53,7 @@ cmake --build build --config Release
 ctest --test-dir build --output-on-failure
 ```
 
-The portable tests do not need JUCE, a DAW, or any audio hardware. Remaining release gates: multi-rate audio fixtures, oversampled peak reference vectors, PDC checks, CPU benchmarks, sanitizers and host tests on FL Studio/Reaper.
+The portable tests do not need JUCE, a DAW, or any audio hardware. The limiter regression uses an independent 16-phase / 64-tap reconstruction reference; it is not an official BS.1770 certification fixture. Remaining release gates: target-hardware CPU profiling, recorded-audio A/B, PDC checks and host tests in FL Studio/Reaper.
 
 ## Migration sequence
 
