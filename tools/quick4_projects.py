@@ -73,13 +73,49 @@ PROJECTS = {
         "option": "OMNICHOIR_BUILD_QUICK4",
         "core_dependency": "SKELLCORESHARED",
         "status": "wired-needs-native-check",
-        "runtime_bins": ["scrot"],
+        "runtime_bins": ["scrot", "openbox", "xprop"],
+        "window_manager": True,
         "extra": [],
     },
 }
 
 def absolute(path: Path) -> Path:
     return path.expanduser().resolve()
+
+
+def capture_command(runner: Path, output: Path, full: bool = False,
+                   window_manager: bool = False) -> list[str]:
+    arguments = [str(runner), "--output", str(output)]
+    if full:
+        arguments.append("--full")
+    xvfb = ["xvfb-run", "-a", "-s", "-screen 0 1920x1200x24"]
+    if not window_manager:
+        return xvfb + arguments
+
+    # JUCE's native X11 popup/window path requires a real window manager.
+    # Headless Xvfb without one can fail in XChangeProperty with BadAtom (0).
+    script = r"""
+set -euo pipefail
+openbox --sm-disable >/tmp/skell-quick4-openbox.log 2>&1 &
+wm_pid=$!
+trap 'kill "$wm_pid" 2>/dev/null || true' EXIT
+wm_ready=0
+for attempt in $(seq 1 30); do
+    if xprop -root _NET_SUPPORTING_WM_CHECK 2>/dev/null | grep -q 'window id'; then
+        wm_ready=1
+        break
+    fi
+    sleep 0.1
+done
+if [ "$wm_ready" -ne 1 ]; then
+    cat /tmp/skell-quick4-openbox.log >&2 || true
+    echo "Quick4 requires a running X11 window manager" >&2
+    exit 1
+fi
+exec "$@"
+"""
+    return xvfb + ["bash", "-euo", "pipefail", "-c", script, "_"] + arguments
+
 
 def main() -> int:
     p=argparse.ArgumentParser(description=__doc__)
@@ -141,9 +177,8 @@ def main() -> int:
         output.mkdir(parents=True,exist_ok=True)
         for old in list(output.glob("*.png")) + [output/"manifest.json"]:
             if old.exists(): old.unlink()
-        cmd=["xvfb-run","-a","-s","-screen 0 1920x1200x24",
-             str(runners[0]),"--output",str(output)]
-        if args.full: cmd.append("--full")
+        cmd=capture_command(runners[0], output, args.full,
+                            cfg.get("window_manager", False))
         subprocess.run(cmd,check=True)
         manifest=json.loads((output/"manifest.json").read_text())
         entries=manifest.get("scenes",[])
