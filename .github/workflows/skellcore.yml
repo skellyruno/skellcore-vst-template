@@ -10,12 +10,14 @@ on:
     paths:
       - "SkellCore/**"
       - "tools/**"
+      - "tests/**"
       - "SkellWorld/**"
       - ".github/workflows/skellcore.yml"
   pull_request:
     paths:
       - "SkellCore/**"
       - "tools/**"
+      - "tests/**"
       - ".github/workflows/skellcore.yml"
 jobs:
   core-native:
