@@ -38,6 +38,7 @@ PROJECTS = {
         "option": "SKELL_SILENCE_BUILD_UI_RENDERER",
         "core_dependency": "SKELLCOREPINNED",
         "status": "wired-needs-native-check",
+        "runtime_bins": ["scrot"],
         "extra": [],
     },
     "skell-deesser-vst": {
@@ -85,7 +86,7 @@ def main() -> int:
     p.add_argument("--list",action="store_true",help="List registered UI renderer targets")
     p.add_argument("--plugin",choices=sorted(PROJECTS))
     p.add_argument("--project",type=Path,help="Local plugin source checkout")
-    p.add_argument("--juce",type=Path,help="Local JUCE 8.0.12 source checkout")
+    p.add_argument("--juce",type=Path,help="Local JUCE source checkout pinned by the selected plugin")
     p.add_argument("--skellcore",type=Path,help="Local pinned SkellCore source checkout")
     p.add_argument("--output",type=Path,default=Path("quick4-local"))
     p.add_argument("--build",type=Path,help="Separate native build directory")
@@ -111,7 +112,7 @@ def main() -> int:
     coredep=cfg["core_dependency"]
     if coredep and (core is None or not (core/"SkellCore"/"CMakeLists.txt").is_file()):
         p.error("This plugin needs --skellcore pointing to a local repo with SkellCore/CMakeLists.txt")
-    for binary in ("cmake","ninja","xvfb-run"):
+    for binary in ("cmake","ninja","xvfb-run", *cfg.get("runtime_bins", [])):
         if not shutil.which(binary):
             p.error(f"{binary} is required for a local real-JUCE screenshot")
     extra=cfg["extra"]+args.define
