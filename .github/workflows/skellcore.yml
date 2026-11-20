@@ -38,6 +38,8 @@ jobs:
         run: ctest --test-dir build-core --build-config Release -R SkellCoreBenchmark -V
       - name: Verify plugin generator
         run: python tools/test_new_plugin.py
+      - name: Test shared Quick4 router contracts
+        run: python -m unittest discover -s tests -p test_quick4_projects.py -v
       - name: SkellWorld protocol, hub and catalog integration
         run: python -m unittest discover -s SkellWorld/tests -v
 
