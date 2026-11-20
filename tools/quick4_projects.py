@@ -72,7 +72,7 @@ PROJECTS = {
         "target": "SkellyChoirQuick4",
         "option": "OMNICHOIR_BUILD_QUICK4",
         "core_dependency": "SKELLCORESHARED",
-        "status": "wired-needs-native-check",
+        "status": "verified-ci-local-replay-blocked",
         "runtime_bins": ["scrot", "openbox", "xprop"],
         "window_manager": True,
         "extra": [],
