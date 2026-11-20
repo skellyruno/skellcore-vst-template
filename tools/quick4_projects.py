@@ -68,6 +68,13 @@ PROJECTS = {
         "status": "locally-verified",
         "extra": [],
     },
+    "skell-choir-vst": {
+        "target": "SkellyChoirQuick4",
+        "option": "OMNICHOIR_BUILD_QUICK4",
+        "core_dependency": "SKELLCORESHARED",
+        "status": "wired-needs-native-check",
+        "extra": [],
+    },
 }
 
 def absolute(path: Path) -> Path:
