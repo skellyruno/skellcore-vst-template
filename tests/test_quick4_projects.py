@@ -39,7 +39,6 @@ class Quick4CaptureCommandTests(unittest.TestCase):
             window_manager=False,
         )
         self.assertNotIn("openbox", " ".join(command))
-        self.assertEqual(command[-2:], ["/build/OtherQuick4", "--output"][-2:]) if False else None
         self.assertEqual(command[-3:], ["/build/OtherQuick4", "--output", "/tmp/other"])
 
 
