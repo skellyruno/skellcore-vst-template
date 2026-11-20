@@ -38,7 +38,6 @@ PROJECTS = {
         "option": "SKELL_SILENCE_BUILD_UI_RENDERER",
         "core_dependency": "SKELLCOREPINNED",
         "status": "wired-needs-native-check",
-        "runtime_bins": ["scrot"],
         "extra": [],
     },
     "skell-deesser-vst": {
@@ -74,6 +73,7 @@ PROJECTS = {
         "option": "OMNICHOIR_BUILD_QUICK4",
         "core_dependency": "SKELLCORESHARED",
         "status": "wired-needs-native-check",
+        "runtime_bins": ["scrot"],
         "extra": [],
     },
 }
