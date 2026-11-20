@@ -25,7 +25,7 @@ class Quick4CaptureCommandTests(unittest.TestCase):
     def test_choir_status_docs_record_verified_ci_boundary(self):
         doc = (ROOT / "docs" / "PLUGIN_QUICK4_ROLLOUT.md").read_text()
         self.assertIn("VERIFIED IN CI", doc)
-        self.assertIn("Local C++ replay was attempted", doc)
+        self.assertIn("A local C++ replay was attempted", doc)
 
     def test_window_manager_is_started_inside_xvfb(self):
         command = MODULE.capture_command(
