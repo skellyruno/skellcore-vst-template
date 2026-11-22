@@ -1,4 +1,8 @@
 name: SkellCore / Headless JUCE UI renderer
+# Cancel only superseded pull-request screenshot jobs. Never cancel main/manual.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 on:
   push:
@@ -42,7 +46,7 @@ jobs:
           & $exe.FullName (Join-Path (Get-Location) 'ui-screenshots')
           if ($LASTEXITCODE -ne 0) { throw "Renderer failed with exit code $LASTEXITCODE" }
           $images = @(Get-ChildItem ui-screenshots -Filter *.png)
-          if ($images.Count -ne 13) { throw "Expected 13 skin/size/tour PNGs, found $($images.Count)" }
+          if ($images.Count -ne 14) { throw "Expected 14 skin/size/tour/Unicode PNGs, found $($images.Count)" }
           if (-not (Test-Path ui-screenshots/manifest.json)) { throw 'Missing screenshot manifest' }
       - uses: actions/upload-artifact@v4
         with:

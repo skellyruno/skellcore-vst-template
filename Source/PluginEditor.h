@@ -2,6 +2,8 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include <SkellCore/StudioUI.h>
+#include <SkellCore/FontSystem.h>
+#include <SkellCore/UpdateBadge.h>
 #include <SkellCore/WorldLink.h>
 
 class SkellAudioProcessorEditor final : public juce::AudioProcessorEditor, private juce::Timer {
@@ -34,6 +36,7 @@ private:
   juce::Label worldStatus_;
   juce::Slider gain;
   juce::Label title;
+  skellcore::ui::UpdateBadge versionBadge_;
   juce::AudioProcessorValueTreeState::SliderAttachment gainAttachment;
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SkellAudioProcessorEditor)
 };
