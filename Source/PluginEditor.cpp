@@ -16,6 +16,7 @@ SkellAudioProcessorEditor::SkellAudioProcessorEditor(SkellAudioProcessor& p)
 
   // Does not change the gain APVTS range, parameter ID, automation or DSP.
   skellcore::ui::configureStudioKnob(gain, 1.0);
+  applyStudioKnobColours();
   addAndMakeVisible(title);
   addAndMakeVisible(gain);
 
@@ -64,11 +65,23 @@ void SkellAudioProcessorEditor::setStudioSkin(skellcore::ui::StudioSkin selectio
     skin_.setSkin(selection);
     setLookAndFeel(&skin_);
   }
+  applyStudioKnobColours();
   skinSelector_.setSelectedId(static_cast<int>(selection) + 1,
                               juce::dontSendNotification);
   if (persist)
     (void) skellcore::ui::StudioSkinStore::save(selection);
   repaint();
+}
+
+void SkellAudioProcessorEditor::applyStudioKnobColours() {
+  // The Slider text box is a child editor. Give the value field explicit
+  // per-component colours so the first minimum-size Ivory render cannot
+  // inherit JUCE's light-on-dark fallback before a skin switch occurs.
+  const auto palette = skin_.palette();
+  gain.setColour(juce::Slider::textBoxTextColourId, palette.foreground);
+  gain.setColour(juce::Slider::textBoxBackgroundColourId, palette.surface);
+  gain.setColour(juce::Slider::textBoxOutlineColourId, palette.border);
+  gain.repaint();
 }
 
 void SkellAudioProcessorEditor::paint(juce::Graphics& g) {
