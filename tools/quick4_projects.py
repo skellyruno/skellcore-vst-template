@@ -90,13 +90,14 @@ def absolute(path: Path) -> Path:
     return path.expanduser().resolve()
 
 def capture_command(runner: Path, output: Path, full: bool = False,
-                   window_manager: bool = False, quick_args=()) -> list[str]:
+                   window_manager: bool = False, quick_args=(),
+                   platform: str | None = None) -> list[str]:
     arguments = [str(runner), "--output", str(output)]
     if full:
         arguments.append("--full")
     else:
         arguments.extend(quick_args)
-    if os.name == "nt":
+    if (platform or os.name) == "nt":
         return arguments
     xvfb = ["xvfb-run", "-a", "-s", "-screen 0 1920x1200x24"]
     if not window_manager:
