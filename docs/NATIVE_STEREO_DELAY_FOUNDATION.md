@@ -1,0 +1,7 @@
+# Native stereo matching delay foundation — 2026-11-24
+
+Additive, causal, filtered stereo delay with bounded feedback, optional cross-feedback, dry M/S gain, and a separately smoothed wet return. This is not a full preset or an identified model of any owner's recording. Fixed delay/routing per prepared recipe; wet changes from the audio thread, no allocations in process. Zero transport latency refers to the immediate dry path, not the intentional echo time. No clipping or loudness normalization is applied. Prepare/reset off the audio thread.
+
+Local GNU C++ 14.2, C++17 -O2 -Wall -Wextra -Werror: targeted synthetic test passed across 44.1/48/96/192 kHz with exact block schedules 1/64/256/511/1024, cross-feedback impulse timing, M/S gain, finite handling, invalid parameter rejection and reset. Header/test blobs e225b16b9d028f2cea0a6fa907d673842ebd6bb7 / 258123f607f2f3e476e422936682f19634fad1f0. Full suite, native CLI integration, real paired fits, CPU, Windows and host verification remain pending. Preserve the previous pinned gate implementation and owner choices.
+
+Next: standalone native source-only CLI, identify same-stage delay and gain on privately verified UP/Wait/Myers/Overtime references, compare Speakerz true wet attenuation against protected survivor, reconstruct Angelic and Zaam delay separately. Muffle/Wobbly convolution is a separate task. No private audio, coefficients or preset mutation.
