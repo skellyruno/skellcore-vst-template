@@ -97,3 +97,8 @@ if(SKELLCORE_BUILD_TESTS)
   target_link_libraries(SkellCoreMatchStereoDelayTests PRIVATE SkellCore::DSP)
   add_test(NAME SkellCoreMatchStereoDelayTests COMMAND SkellCoreMatchStereoDelayTests)
 endif()
+
+if(SKELLCORE_BUILD_NATIVE_MATCH_RENDERER)
+  add_executable(SkellCoreMatchStereoDelayRender tools/match_stereo_delay_render.cpp)
+  target_link_libraries(SkellCoreMatchStereoDelayRender PRIVATE SkellCore::DSP)
+endif()
