@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Persistent Quick4 workspace for genuine JUCE plugin captures.
 
-The workspace stays on the user's disk between chats. Clones JUCE 8.0.12 and
+The workspace stays on the user's disk between chats. Clones the selected project's pinned JUCE tag and
 the selected plugin once, then reuses source/dependency directories and Ninja
 build cache. A newly supplied --ref is fetched ONLY with explicit --update.
 This is an interactive command; nothing runs in the background or in CI.
@@ -37,30 +37,30 @@ def require_clean(path: Path) -> None:
         )
 
 
-def ensure_juce(location: Path, *, offline: bool) -> None:
+def ensure_juce(location: Path, *, offline: bool, tag: str = JUCE_TAG) -> None:
     if (location / "CMakeLists.txt").is_file():
         # A directory name is not version evidence. Never repair or switch a
         # user's cached dependency implicitly, especially in offline mode.
         if not (location / ".git").exists():
-            raise RuntimeError(f"Cannot verify pinned JUCE {JUCE_TAG}: not a Git checkout at {location}")
+            raise RuntimeError(f"Cannot verify pinned JUCE {tag}: not a Git checkout at {location}")
         try:
             actual = output("git", "-C", str(location), "rev-parse", "HEAD")
             pinned = output("git", "-C", str(location), "rev-parse", "--verify",
-                            f"refs/tags/{JUCE_TAG}^{{commit}}")
+                            f"refs/tags/{tag}^{{commit}}")
         except subprocess.CalledProcessError as error:
-            raise RuntimeError(f"Cannot verify pinned JUCE {JUCE_TAG} at {location}") from error
+            raise RuntimeError(f"Cannot verify pinned JUCE {tag} at {location}") from error
         if actual != pinned:
-            raise RuntimeError(f"JUCE cache is not at pinned {JUCE_TAG}: {location}")
+            raise RuntimeError(f"JUCE cache is not at pinned {tag}: {location}")
         require_clean(location)
         return
     if location.exists():
         raise RuntimeError(f"JUCE directory exists but has no CMakeLists.txt: {location}")
     if offline:
-        raise RuntimeError(f"Offline: no JUCE {JUCE_TAG} source at {location}")
+        raise RuntimeError(f"Offline: no JUCE {tag} source at {location}")
     location.parent.mkdir(parents=True, exist_ok=True)
-    run("git", "clone", "--depth", "1", "--branch", JUCE_TAG,
+    run("git", "clone", "--depth", "1", "--branch", tag,
         "https://github.com/juce-framework/JUCE.git", str(location))
-    ensure_juce(location, offline=True)
+    ensure_juce(location, offline=True, tag=tag)
 
 
 def ensure_plugin(name: str, location: Path, *, ref: str | None,
@@ -122,7 +122,8 @@ def main() -> int:
 
     root = args.workspace.expanduser().resolve()
     project = root / "projects" / args.plugin
-    juce = root / "vendor" / f"JUCE-{JUCE_TAG}"
+    juce_tag = PROJECTS[args.plugin].get("juce_tag", JUCE_TAG)
+    juce = root / "vendor" / f"JUCE-{juce_tag}"
     build = root / "build" / args.plugin
     captures = root / "captures" / args.plugin
     if args.update and args.offline:
@@ -133,7 +134,7 @@ def main() -> int:
         parser.error("Run this tool from a full SkellCore repository checkout")
 
     try:
-        ensure_juce(juce, offline=args.offline)
+        ensure_juce(juce, offline=args.offline, tag=juce_tag)
         ensure_plugin(args.plugin, project, ref=args.ref,
                       update=args.update, offline=args.offline)
         sha = output("git", "-C", str(project), "rev-parse", "HEAD")

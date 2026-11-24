@@ -74,17 +74,65 @@ PROJECTS = {
         "status": "locally-verified",
         "extra": [],
     },
+    "skell-choir-vst": {
+        "target": "SkellyChoirQuick4",
+        "option": "OMNICHOIR_BUILD_QUICK4",
+        "core_dependency": "SKELLCORESHARED",
+        "status": "verified-ci-local-replay-blocked",
+        "runtime_bins": ["scrot", "openbox", "xprop"],
+        "window_manager": True,
+        "juce_tag": "8.0.16-security",
+        "extra": [],
+    },
 }
 
 def absolute(path: Path) -> Path:
     return path.expanduser().resolve()
+
+def capture_command(runner: Path, output: Path, full: bool = False,
+                   window_manager: bool = False, quick_args=()) -> list[str]:
+    arguments = [str(runner), "--output", str(output)]
+    if full:
+        arguments.append("--full")
+    else:
+        arguments.extend(quick_args)
+    if os.name == "nt":
+        return arguments
+    xvfb = ["xvfb-run", "-a", "-s", "-screen 0 1920x1200x24"]
+    if not window_manager:
+        return xvfb + arguments
+
+    # JUCE's native X11 popup/window path requires a real window manager.
+    # Headless Xvfb without one can fail in XChangeProperty with BadAtom (0).
+    script = r"""
+set -euo pipefail
+openbox --sm-disable >/tmp/skell-quick4-openbox.log 2>&1 &
+wm_pid=$!
+trap 'kill "$wm_pid" 2>/dev/null || true' EXIT
+wm_ready=0
+for attempt in $(seq 1 30); do
+    if xprop -root _NET_SUPPORTING_WM_CHECK 2>/dev/null | grep -q 'window id'; then
+        wm_ready=1
+        break
+    fi
+    sleep 0.1
+done
+if [ "$wm_ready" -ne 1 ]; then
+    cat /tmp/skell-quick4-openbox.log >&2 || true
+    echo "Quick4 requires a running X11 window manager" >&2
+    exit 1
+fi
+exec "$@"
+"""
+    return xvfb + ["bash", "-euo", "pipefail", "-c", script, "_"] + arguments
+
 
 def main() -> int:
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--list",action="store_true",help="List registered UI renderer targets")
     p.add_argument("--plugin",choices=sorted(PROJECTS))
     p.add_argument("--project",type=Path,help="Local plugin source checkout")
-    p.add_argument("--juce",type=Path,help="Local JUCE 8.0.12 source checkout")
+    p.add_argument("--juce",type=Path,help="Local JUCE source checkout pinned by the selected plugin")
     p.add_argument("--skellcore",type=Path,help="Local pinned SkellCore source checkout")
     p.add_argument("--output",type=Path,default=Path("quick4-local"))
     p.add_argument("--build",type=Path,help="Separate native build directory")
@@ -110,8 +158,8 @@ def main() -> int:
     coredep=cfg["core_dependency"]
     if coredep and (core is None or not (core/"SkellCore"/"CMakeLists.txt").is_file()):
         p.error("This plugin needs --skellcore pointing to a local repo with SkellCore/CMakeLists.txt")
-    for binary in (("cmake", "ninja", "xvfb-run") if os.name != "nt"
-                   else ("cmake", "ninja")):
+    for binary in (("cmake", "ninja", "xvfb-run", *cfg.get("runtime_bins", []))
+                   if os.name != "nt" else ("cmake", "ninja")):
         if not shutil.which(binary):
             p.error(f"{binary} is required for a local real-JUCE screenshot")
     if not shutil.which("c++") and os.name != "nt":
@@ -149,13 +197,8 @@ def main() -> int:
         output.mkdir(parents=True,exist_ok=True)
         for old in list(output.glob("*.png")) + [output/"manifest.json"]:
             if old.exists(): old.unlink()
-        cmd=[str(runners[0]),"--output",str(output)]
-        if args.full:
-            cmd.append("--full")
-        else:
-            cmd.extend(cfg.get("quick_args",[]))
-        if os.name!="nt":
-            cmd=["xvfb-run","-a","-s","-screen 0 1920x1200x24",*cmd]
+        cmd=capture_command(runners[0], output, args.full,
+                            cfg.get("window_manager", False), cfg.get("quick_args", ()))
         subprocess.run(cmd,check=True)
         manifest=json.loads((output/"manifest.json").read_text())
         entries=manifest.get("scenes",[])

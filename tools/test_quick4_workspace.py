@@ -14,6 +14,13 @@ class WorkspaceTests(unittest.TestCase):
         self.assertEqual(cfg["target"], "SkellPresetUIRenderer")
         self.assertEqual(cfg["quick_args"], ["--quick4"])
 
+    def test_choir_uses_distinct_pinned_juce(self):
+        self.assertEqual(quick4_projects.PROJECTS["skell-choir-vst"]["juce_tag"],
+                         "8.0.16-security")
+        with tempfile.TemporaryDirectory() as temp:
+            with self.assertRaisesRegex(RuntimeError, "Offline: no JUCE 8.0.16-security"):
+                workspace.ensure_juce(Path(temp) / "missing", offline=True, tag="8.0.16-security")
+
     def test_offline_requires_existing_pinned_juce(self):
         with tempfile.TemporaryDirectory() as temp:
             with self.assertRaisesRegex(RuntimeError, "Offline: no JUCE"):
