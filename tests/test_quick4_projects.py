@@ -31,7 +31,7 @@ class Quick4CaptureCommandTests(unittest.TestCase):
         command = MODULE.capture_command(
             pathlib.Path("/build/SkellyChoirQuick4"),
             pathlib.Path("/tmp/quick4"),
-            window_manager=True,
+            window_manager=True, platform="posix",
         )
         joined = " ".join(command)
         self.assertIn("xvfb-run", command)
@@ -39,11 +39,21 @@ class Quick4CaptureCommandTests(unittest.TestCase):
         self.assertIn("xprop -root _NET_SUPPORTING_WM_CHECK", joined)
         self.assertIn('exec "$@"', joined)
 
+    def test_windows_runs_native_executable_and_preserves_quick_args(self):
+        runner = Path("build/SkellPresetUIRenderer.exe")
+        output = Path("captures")
+        self.assertEqual(MODULE.capture_command(runner, output, window_manager=True,
+                         quick_args=["--quick4"], platform="nt"),
+                         [str(runner), "--output", str(output), "--quick4"])
+        self.assertEqual(MODULE.capture_command(runner, output, full=True,
+                         quick_args=["--quick4"], platform="nt"),
+                         [str(runner), "--output", str(output), "--full"])
+
     def test_other_plugins_keep_their_existing_capture_command(self):
         command = MODULE.capture_command(
             pathlib.Path("/build/OtherQuick4"),
             pathlib.Path("/tmp/other"),
-            window_manager=False,
+            window_manager=False, platform="posix",
         )
         self.assertNotIn("openbox", " ".join(command))
         self.assertEqual(Path(command[-3]), Path("/build/OtherQuick4"))

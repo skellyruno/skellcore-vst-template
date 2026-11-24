@@ -44,3 +44,33 @@ This script **actually configures and compiles** the native renderer and validat
 ## Mini screenshot audit result
 
 The Mini CMake target is **new** and not named `tools/render.cpp` (that tool exports WAV audio). Verified directly on Linux with pinned sources and the isolated development overlay. Quick4 captured: `main_default_432.png`, `key_scale_selected_432.png`, `retune_active_720.png`, `custom_notes_432.png`, `contact-sheet.png`, and `manifest.json`. Full eight-view responsive audit also passed. On the compiled binary Quick4 took approximately **1.3 seconds**; eight scenes approximately **2.5 seconds**. Initial C++ compilation was significantly slower. The real UI remains neon-green-only by design. Windows/FL Studio release validation is separate.
+
+## Persistent workspace (preferred for new UI work)
+
+Use quick4.ps1 (Windows Developer PowerShell) or quick4.sh (Linux), both backed by tools/quick4_workspace.py. They cache the selected project's actual Git revision, pinned JUCE source, and CMake/Ninja objects under ~/Skelly/Quick4. The cross-chat capture ZIP includes 4 real PNGs, contact sheet, manifest and Git SHA; see docs/QUICK4_PERSISTENT_WORKSPACE.md. A new chat's /mnt/data does not automatically mount that persistent local workspace. Never present captures of an older commit as current.
+
+For Skell Preset the shared router passes --quick4 to the actual SkellPresetUIRenderer, capturing Simple, Advanced, movable effect picker and MIC. --full retains the original ~110-scene regression suite. Windows runs the local renderer directly without Xvfb; Linux uses Xvfb. This wiring is not yet native-build verified in the present isolated environment and must be smoke-tested on Windows/Linux before claiming visual perfection.
+
+## Execute from one local workspace
+
+Check out source (or use a verified offline source archive), supply pinned JUCE 8 and SkellCore headers, source the isolated Linux development overlay if running in a restricted container:
+
+```bash
+python3 tools/quick4_projects.py --list
+python3 tools/quick4_projects.py \
+  --plugin skelltune-mini \
+  --project /path/to/skelltune-mini \
+  --juce /path/to/JUCE-8.0.12 \
+  --skellcore /path/to/pinned-skellcore-vst-template \
+  --output /tmp/mini-quick4
+```
+
+This script **actually configures and compiles** the native renderer and validates the manifest, four PNGs, and contact sheet; it refuses to silently reuse old binary previews. `--full` is deliberately nondefault. Use `--jobs 1` on 13GB or constrained memory systems. Skell-Preset has additional pinned headers-only dependencies; in fully isolated environments provide those via repeated `--define FETCHCONTENT_SOURCE_DIR_...=<local path>`. Do not claim complete offline compilation of those repos until proven.
+
+**Next integrations:** Validate Silence/DeEsser/Preset/Fan native compilation, then wire EQ, Key, Spacer, Delay, Afar, Separator, AdlibLab, Necromancer, Chess, Choir, Cast, Scratch, Stop, Glitch/Gate, others. Each plugin needs a verified real renderer target and per-plugin scene semantics; copying a generic mock screenshot is not a migration.
+
+## Mini screenshot audit result
+
+The Mini CMake target is **new** and not named `tools/render.cpp` (that tool exports WAV audio). Verified directly on Linux with pinned sources and the isolated development overlay. Quick4 captured: `main_default_432.png`, `key_scale_selected_432.png`, `retune_active_720.png`, `custom_notes_432.png`, `contact-sheet.png`, and `manifest.json`. Full eight-view responsive audit also passed. On the compiled binary Quick4 took approximately **1.3 seconds**; eight scenes approximately **2.5 seconds**. Initial C++ compilation was significantly slower. The real UI remains neon-green-only by design. Windows/FL Studio release validation is separate.
+
+Choir uses its own pinned JUCE 8.0.16-security cache; other registered projects retain the default 8.0.12 workspace pin.
