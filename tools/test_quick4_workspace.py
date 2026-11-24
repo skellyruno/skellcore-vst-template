@@ -24,9 +24,36 @@ class WorkspaceTests(unittest.TestCase):
             target = Path(temp) / "JUCE-8.0.12"
             target.mkdir()
             (target / "CMakeLists.txt").write_text("project(JUCE)\n")
-            with mock.patch.object(workspace, "run") as runner:
+            (target / ".git").mkdir()
+            with mock.patch.object(workspace, "output", side_effect=["abc", "abc", ""]):
+                with mock.patch.object(workspace, "run") as runner:
+                    workspace.ensure_juce(target, offline=True)
+                    runner.assert_not_called()
+
+    def test_wrong_cached_juce_revision_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            target = Path(temp)
+            (target / "CMakeLists.txt").write_text("project(JUCE)\n")
+            (target / ".git").mkdir()
+            with mock.patch.object(workspace, "output", side_effect=["wrong", "pinned"]):
+                with self.assertRaisesRegex(RuntimeError, "not at pinned"):
+                    workspace.ensure_juce(target, offline=True)
+
+    def test_dirty_cached_juce_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            target = Path(temp)
+            (target / "CMakeLists.txt").write_text("project(JUCE)\n")
+            (target / ".git").mkdir()
+            with mock.patch.object(workspace, "output", side_effect=["abc", "abc", " M CMakeLists.txt"]):
+                with self.assertRaisesRegex(RuntimeError, "uncommitted changes"):
+                    workspace.ensure_juce(target, offline=True)
+
+    def test_unversioned_juce_cache_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            target = Path(temp)
+            (target / "CMakeLists.txt").write_text("project(JUCE)\n")
+            with self.assertRaisesRegex(RuntimeError, "not a Git checkout"):
                 workspace.ensure_juce(target, offline=True)
-                runner.assert_not_called()
 
     def test_existing_plugin_cache_is_not_refetched_by_default(self):
         with tempfile.TemporaryDirectory() as temp:

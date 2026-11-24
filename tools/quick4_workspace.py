@@ -39,7 +39,20 @@ def require_clean(path: Path) -> None:
 
 def ensure_juce(location: Path, *, offline: bool) -> None:
     if (location / "CMakeLists.txt").is_file():
-        return  # Never update or delete the pinned local JUCE cache implicitly.
+        # A directory name is not version evidence. Never repair or switch a
+        # user's cached dependency implicitly, especially in offline mode.
+        if not (location / ".git").exists():
+            raise RuntimeError(f"Cannot verify pinned JUCE {JUCE_TAG}: not a Git checkout at {location}")
+        try:
+            actual = output("git", "-C", str(location), "rev-parse", "HEAD")
+            pinned = output("git", "-C", str(location), "rev-parse", "--verify",
+                            f"refs/tags/{JUCE_TAG}^{{commit}}")
+        except subprocess.CalledProcessError as error:
+            raise RuntimeError(f"Cannot verify pinned JUCE {JUCE_TAG} at {location}") from error
+        if actual != pinned:
+            raise RuntimeError(f"JUCE cache is not at pinned {JUCE_TAG}: {location}")
+        require_clean(location)
+        return
     if location.exists():
         raise RuntimeError(f"JUCE directory exists but has no CMakeLists.txt: {location}")
     if offline:
@@ -47,6 +60,7 @@ def ensure_juce(location: Path, *, offline: bool) -> None:
     location.parent.mkdir(parents=True, exist_ok=True)
     run("git", "clone", "--depth", "1", "--branch", JUCE_TAG,
         "https://github.com/juce-framework/JUCE.git", str(location))
+    ensure_juce(location, offline=True)
 
 
 def ensure_plugin(name: str, location: Path, *, ref: str | None,
