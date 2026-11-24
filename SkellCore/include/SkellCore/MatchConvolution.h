@@ -96,8 +96,11 @@ private:
         for(std::size_t k=0;k<count;++k) {
             const auto* a=s.x.data()+((head+count-k)%count)*n;
             const auto* b=s.h.data()+k*n;
-            for(std::size_t i=0;i<n;++i) s.sum[i]+=a[i]*b[i];
+            // Real audio has conjugate-symmetric spectra; accumulate unique bins only.
+            for(std::size_t i=0;i<=p;++i) s.sum[i]+=a[i]*b[i];
         }
+        s.sum[0]={s.sum[0].real(),0.f}; s.sum[p]={s.sum[p].real(),0.f};
+        for(std::size_t i=1;i<p;++i) s.sum[n-i]=std::conj(s.sum[i]);
         fft(s.sum.data(),true);
         for(std::size_t i=0;i<p;++i) {s.output[i]=clean(s.sum[i].real()+s.overlap[i]);s.overlap[i]=clean(s.sum[i+p].real());}
     }
