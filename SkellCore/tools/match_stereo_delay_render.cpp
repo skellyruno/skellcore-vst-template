@@ -13,11 +13,16 @@ int main(int argc, char** argv) {
     try {
         static_assert(sizeof(float)==4 && std::numeric_limits<float>::is_iec559);
         if (argc==2 && std::string(argv[1])=="--version") { std::cout<<"match-stereo-delay-v1\n"; return 0; }
-        if (argc!=12) throw std::runtime_error("usage: render input.f32 output.f32 rate delayMs cutoffHz feedback cross wet midGain sideGain block");
+        if (argc==2 && std::string(argv[1])=="--capabilities") { std::cout<<"match-stereo-delay-v2: optional duckDepth duckThreshold outputGain duckAttackMs duckReleaseMs\n"; return 0; }
+        if (argc!=12 && argc!=17) throw std::runtime_error("usage: render input.f32 output.f32 rate delayMs cutoffHz feedback cross wet midGain sideGain block [duckDepth duckThreshold outputGain duckAttackMs duckReleaseMs]");
         auto parse=[&](int i,double lo,double hi) { std::size_t n=0; std::string s=argv[i]; double v=std::stod(s,&n); if(n!=s.size() || !std::isfinite(v) || v<lo || v>hi) throw std::runtime_error("invalid parameter"); return v; };
         const double rate=parse(3,8000.,192000.), block=parse(11,1.,8192.);
         if(rate!=std::floor(rate)||block!=std::floor(block)) throw std::runtime_error("integer rate/block required");
         MatchStereoDelay::Parameters p{parse(4,1.,2000.),parse(5,20.,rate*.5),float(parse(6,-.95,.95)),float(parse(7,0.,1.)),float(parse(8,0.,2.)),float(parse(9,0.,4.)),float(parse(10,0.,4.))};
+        if(argc==17) {
+            p.duckDepth=float(parse(12,0.,1.)); p.duckThreshold=float(parse(13,.0001,1.));
+            p.outputGain=float(parse(14,.01,4.)); p.duckAttackMs=parse(15,1.,200.); p.duckReleaseMs=parse(16,10.,2000.);
+        }
         if(std::filesystem::exists(argv[2]) || std::filesystem::is_symlink(argv[2])) throw std::runtime_error("output already exists");
         std::ifstream src(argv[1],std::ios::binary|std::ios::ate); if(!src) throw std::runtime_error("input open failed");
         const auto bytes=src.tellg(); if(bytes<=0 || bytes%8 || bytes>std::streamoff(192000)*8*600) throw std::runtime_error("bad input length");

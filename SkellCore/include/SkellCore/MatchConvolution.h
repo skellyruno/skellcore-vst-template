@@ -35,15 +35,18 @@ public:
             next.reverse[i]=r;
         }
         for(int c=0;c<2;++c) {
-            auto& s=next.channels[c]; s.h.resize(next.count*next.n); s.x.resize(next.count*next.n);
+            auto& s=next.channels[c]; s.h.resize(next.count*(next.p+1)); s.x.resize(next.count*(next.p+1));
+            s.scratch.resize(next.n);
             s.sum.resize(next.n); s.input.resize(next.p);
             s.output.resize(next.p); s.overlap.resize(next.p);
             for(std::size_t k=0;k<next.count;++k) {
-                auto* h=s.h.data()+k*next.n;
+                auto* h=s.scratch.data();
+                std::fill(h,h+next.n,C{});
                 for(std::size_t i=0;i<next.p && k*next.p+i<ir.size();++i) {
                     const auto f=ir[k*next.p+i]; h[i]=c?f.right:f.left;
                 }
                 next.fft(h,false);
+                std::copy_n(h,next.p+1,s.h.data()+k*(next.p+1));
             }
         }
         next.dry.resize(next.p); next.reset(); *this=std::move(next); return true;
@@ -75,7 +78,7 @@ public:
     }
 private:
     using C=std::complex<float>;
-    struct Channel { std::vector<C> h,x,sum; std::vector<float> input,output,overlap; };
+    struct Channel { std::vector<C> h,x,sum,scratch; std::vector<float> input,output,overlap; };
     static float clean(float x) noexcept { return std::isfinite(x)&&std::abs(x)>=1.e-20f?x:0.f; }
     void fft(C* v,bool inverse) const noexcept {
         for(std::size_t i=0;i<n;++i) if(i<reverse[i]) std::swap(v[i],v[reverse[i]]);
@@ -89,15 +92,19 @@ private:
         if(inverse) for(std::size_t i=0;i<n;++i) v[i]/=static_cast<float>(n);
     }
     void render(Channel& s) noexcept {
-        auto* x=s.x.data()+head*n;
+        auto* x=s.scratch.data();
         for(std::size_t i=0;i<p;++i) x[i]=s.input[i];
         std::fill(x+p,x+n,C{}); fft(x,false);
+        std::copy_n(x,p+1,s.x.data()+head*(p+1));
         std::fill(s.sum.begin(),s.sum.end(),C{});
         for(std::size_t k=0;k<count;++k) {
-            const auto* a=s.x.data()+((head+count-k)%count)*n;
-            const auto* b=s.h.data()+k*n;
+            const auto* a=s.x.data()+((head+count-k)%count)*(p+1);
+            const auto* b=s.h.data()+k*(p+1);
             // Real audio has conjugate-symmetric spectra; accumulate unique bins only.
-            for(std::size_t i=0;i<=p;++i) s.sum[i]+=a[i]*b[i];
+            for(std::size_t i=0;i<=p;++i) {
+                const float ar=a[i].real(), ai=a[i].imag(), br=b[i].real(), bi=b[i].imag();
+                s.sum[i]+=C{ar*br-ai*bi,ar*bi+ai*br};
+            }
         }
         s.sum[0]={s.sum[0].real(),0.f}; s.sum[p]={s.sum[p].real(),0.f};
         for(std::size_t i=1;i<p;++i) s.sum[n-i]=std::conj(s.sum[i]);
