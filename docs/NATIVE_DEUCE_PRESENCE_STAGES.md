@@ -1,0 +1,7 @@
+# Experimental native Deuce v2.3 + v2.5 mathematical port
+
+Source specification: Sound Match frozen sustained_air.py and deuce_presence_repair.py at f585b3e44589c4835d4e6ed302958b5ea2cbbc50. Native fixed double precision Butterworth bandpass cascade design, linked energy detector, documented vowel activity gain and fixed RBJ presence filter/trim. No per-phrase tuning, reference input, allocation in process, or transport lookahead. Supports 32–192 kHz. Intended input is the frozen D/Max-style rendered candidate, not a raw vocal or a substitute for the full REC/MAIN chain.
+
+Local GCC and Clang C++17 Release warnings-as-errors pass at 32/44.1/48/96/192k; 1/64/256/511/1024 schedules identical, independent SciPy golden sample values within 1e-10, mono and finite/reset/rate checks. Independent formula comparison on synthetic tone/noise all five rates max abs discrepancy 1.17e-15. Actual historical 15s, 661500 frames, lossy D/Max preview: maximum native vs SciPy discrepancy 1.67e-16, RMS 1.01e-17, 4x estimated output peak -4.1523 dBTP; native elapsed 0.0731 seconds (offline bridge, not host CPU).
+
+This proves mathematical stage parity on that input, not recovery of the exact approved lossless v2.5 recording. Exact lossless D/Max source and full v2.5 player remain missing. Preserve protected offline approval and factory 46 trial, no production integration until source/independent take and wrapper gates. Full CI, host CPU, VST3, pluginval and FL Studio separate. No private audio committed.
