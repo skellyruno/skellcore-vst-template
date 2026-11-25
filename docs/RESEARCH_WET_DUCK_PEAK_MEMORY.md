@@ -1,0 +1,16 @@
+# Wet duck peak-memory validation (2026-11-24)
+
+Independent original research, no vendor DSP/code/data or private audio committed. Optional fifth constructor argument peakReleaseMs (0–100 ms; default 0 preserves existing settings). Instantaneous peak capture, exponential memory, then existing asymmetric gain smoother. Reset clears both states; nonfinite/range validation and denormal guard. No production effect switched on.
+
+The original FDN header blob f187fb6183a767b2d1667f211194680485b36c87 was verified locally. Its zero-depth wet output feeds four controllers (0, 1, 2, 3 ms peak memory), compared against original amplitude-domain ducked FDN. Both stereo recordings are 44.1 kHz; center 12 seconds for selection, first 5 seconds for a nonoverlapping excerpt check (not independent performances). 3 seconds zero padding after each. No normalization, 9 dB depth, 14 ms gain attack, 260 ms release, 1.8 s RT60 setting, 4200 Hz damping. Wet energy dB relative to unducked FDN over active clip and first silent second. Peak-memory 1 ms selected by smallest maximum active attenuation discrepancy on selection excerpts; held-out excerpts then measured. Actual output finite. No subjective quality claim.
+
+| Clip | Original active / tail dB | v1 0 ms | 1 ms candidate | 2 ms | 3 ms |
+|---|---|---|---|---|---|
+| Music selection | -7.364 / -6.544 | -7.162 / -3.770 | -7.339 / -3.874 | -7.403 / -3.934 | -7.442 / -3.985 |
+| Preview selection | -4.860 / -3.674 | -4.202 / -2.548 | -4.784 / -2.779 | -5.048 / -2.931 | -5.220 / -3.034 |
+| Music first 5 s | -5.526 / -4.187 | -5.197 / -2.868 | -5.736 / -3.158 | -5.928 / -3.294 | -6.038 / -3.386 |
+| Preview first 5 s | -4.743 / -4.188 | -4.031 / -2.647 | -4.551 / -2.897 | -4.770 / -2.996 | -4.906 / -3.061 |
+
+Peak sample-to-sample gain changes (original vs 1 ms): .0068532 vs .0009138 (music selection), .0027667 vs .0007604 (preview selection), .0017409 vs .0006154 (music excerpt), .0019913 vs .0005797 (preview excerpt). Not a perceptual artifact metric. Both original and new native regression executables built with g++ C++17 -O3 -Wall -Wextra -Werror and ASan/UBSan, passed at 44.1/48/96/192 kHz. 113 Hz tone-to-silence t90 599.604–599.625 ms for 1 ms candidate. Existing constant-input regression passed unchanged. Exact tested header blob 4cc09d6df6b0b9d2927d1aba64a3d305d5af2fb8; test 9a2ec9c2749d63dcb0239a1d08fcb9bd47159085; comparison harness 1e2b3cabf7625778279d6bb49b8e497837bd46cb. Reproduce with g++ -std=c++17 -O3 -Wall -Wextra -Werror -Iexperiments/skelliere experiments/skelliere/space_duck_compare.cpp -o /tmp/space_duck_compare; pass sample rate, native endian stereo float64 raw input and separate output file. Output 17 doubles/frame: unducked L/R, baseline L/R/gain, then L/R/gain per 0/1/2/3 ms. Do not use same input/output path. Private audio and output raw files outside Git. Local dependency JUCE absent, DNS failure; no plugin, UI, host, full CPU/latency, commercial A/B, or independent performance verification. No new binary decompilation this batch. Keep candidate optional until listening.
+
+Source: private decompiler commit df77b4959b14fc4c79e8d3f8b84d525ae7bd4b37, original independently written DSP. Exact shared header/test blobs; no vendor code, recordings or proprietary data.
