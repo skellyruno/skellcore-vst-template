@@ -1,0 +1,185 @@
+{
+  "upstream_repo": "skellyruno/skell-vst-decompiler",
+  "upstream_commit": "abe96d6f7b809b3c4d14d850ad0bf909f86d2ace",
+  "files": [
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/dynamics/OriginalAdaptiveCompressor.h",
+      "git_blob": "1f706bbbe5e288c1d0595e946c61463876c7ae02",
+      "upstream_path": "experiments/skelliere/OriginalAdaptiveCompressor.h",
+      "upstream_git_blob": "db2dee3a75fad8732e2103e59b042f1b8fc9060b"
+    },
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/dynamics/OriginalDualDetectorGate.h",
+      "git_blob": "9fa5f2bf7bd841ca530b6cf6169bb0f7f8260768",
+      "upstream_path": "experiments/skelliere/OriginalDualDetectorGate.h",
+      "upstream_git_blob": "5813955c6c7b1f7ffe353276a87ea9e01f266643"
+    },
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/dynamics/OriginalDynamics.h",
+      "git_blob": "a216aefd55aba7e5ff8b63c29a804a34f1bb96de",
+      "upstream_path": "experiments/skelliere/OriginalDynamics.h",
+      "upstream_git_blob": "251f394b8fce8d0430398e80833e59ff10fa382f"
+    },
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/dynamics/OriginalHistoryCompressor.h",
+      "git_blob": "e2cf603120d0ea5a481a7eb6a45efd57860561b9",
+      "upstream_path": "experiments/skelliere/OriginalHistoryCompressor.h",
+      "upstream_git_blob": "207b32f154e9811a6bf62f3fa926ac25278eb1d9"
+    },
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/dynamics/OriginalSpace.h",
+      "git_blob": "cea104474584d030b06a78f59eaf7f25f94414c9",
+      "upstream_path": "experiments/skelliere/OriginalSpace.h",
+      "upstream_git_blob": "f187fb6183a767b2d1667f211194680485b36c87"
+    },
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/dynamics/ResearchWetDuck.h",
+      "git_blob": "98dfbe14e773105677698a62c024a241edd3544a",
+      "upstream_path": "experiments/skelliere/SkellCore/ResearchWetDuck.h",
+      "upstream_git_blob": "4cc09d6df6b0b9d2927d1aba64a3d305d5af2fb8"
+    },
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/modulation/StackedFlanger.h",
+      "git_blob": "ba3b2c750c70b9a8d60cc8aa33c3ba8d9573decd",
+      "upstream_path": "experiments/flangus_reference/StackedFlanger.h",
+      "upstream_git_blob": "4f00fc8e06a5b4d3470d3c74f684acce4d84b172"
+    },
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/spectral/ColorContiguous.h",
+      "git_blob": "fee0a62e464abe31fc5354cf4f564acea00890f9",
+      "upstream_path": "experiments/engine_lab/ColorContiguous.h",
+      "upstream_git_blob": "4c2785fe1efda481e569886b5987091d1fe092b3"
+    },
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/spectral/ColorOversampled.h",
+      "git_blob": "db931af265203f57e3ed357f9fb5e873b51abc83",
+      "upstream_path": "experiments/engine_lab/ColorOversampled.h",
+      "upstream_git_blob": "9d403ac669479bb6629a39f8ae2f9bded737844d"
+    },
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/spectral/IndependentEngines.h",
+      "git_blob": "eda96ddbc5659a707892c6cbbf683dc32e05001a",
+      "upstream_path": "experiments/engine_lab/IndependentEngines.h",
+      "upstream_git_blob": "b81bc2cba042148e1c809f072c70ad0d4b22dba0"
+    },
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/spectral/Spacer3.h",
+      "git_blob": "198d0ee5fa1ace2a85d04b3e69afb79403899981",
+      "upstream_path": "experiments/engine_lab/Spacer3.h",
+      "upstream_git_blob": "283cea3c646b2e07268f9dcdb5696d610a430d13"
+    },
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/spectral/SpacerExtended.h",
+      "git_blob": "a473ec3042e6304f572d13d77594d447399d9ab8",
+      "upstream_path": "experiments/engine_lab/SpacerExtended.h",
+      "upstream_git_blob": "1e939a65e82dbc7d670cd7d9986bf93753972bbf"
+    },
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/spectral/SpacerSelective.h",
+      "git_blob": "b3efc46e1aa07e42bafd25a32ae8e8dc1f3ac4b5",
+      "upstream_path": "experiments/engine_lab/SpacerSelective.h",
+      "upstream_git_blob": "24b6c931eb7f5349844bc3d9ad65656e03967697"
+    },
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/spectral/SpacerStereoSIMD.h",
+      "git_blob": "ac75589f3d426cd0ab02ba54ddf0aded24b8f4f6",
+      "upstream_path": "experiments/engine_lab/SpacerStereoSIMD.h",
+      "upstream_git_blob": "b189833660646aae06a2055c89d8eb004d85bb88"
+    },
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/spectral/Spectral4.h",
+      "git_blob": "58bfbe8e39e2cb545d67d24e6c93e2b5624e9d88",
+      "upstream_path": "experiments/engine_lab/Spectral4.h",
+      "upstream_git_blob": "a118379e382aa2482c20d9bb6cda2055ea7a7c55"
+    },
+    {
+      "path": "SkellCore/tests/research/dynamics/test_adaptive.cpp",
+      "git_blob": "d73e1c90b7d1305255654d91154763aa647ea672",
+      "upstream_path": "experiments/skelliere/test_adaptive.cpp",
+      "upstream_git_blob": "bfdd8b22dd6c044ce2e3d7fa2cf6ef497cebc5fb"
+    },
+    {
+      "path": "SkellCore/tests/research/dynamics/test_dual_detector_gate.cpp",
+      "git_blob": "05739ad45df5ed9e7b6cc8ebc2a9392c121b9b5e",
+      "upstream_path": "experiments/skelliere/test_dual_detector_gate.cpp",
+      "upstream_git_blob": "276f567d74e3957e03f85f3f2a12bb504c5bc62e"
+    },
+    {
+      "path": "SkellCore/tests/research/dynamics/test_history_and_space.cpp",
+      "git_blob": "f78b16ebac2ab5e326254d6e38730ed9c2daafd4",
+      "upstream_path": "experiments/skelliere/test_history_and_space.cpp",
+      "upstream_git_blob": "438937be79c65261f9c85bf6fa433bf75a2964fb"
+    },
+    {
+      "path": "SkellCore/tests/research/dynamics/test_original.cpp",
+      "git_blob": "36cb54662314403cbe5cd76ebee977a4f1185f93",
+      "upstream_path": "experiments/skelliere/test_original.cpp",
+      "upstream_git_blob": "a2914f1223ce78b29f0fa5ea2ff306206d1c4b9c"
+    },
+    {
+      "path": "SkellCore/tests/research/dynamics/test_space.cpp",
+      "git_blob": "019c851b782738e64562c055962f0ee2bc9aea0b",
+      "upstream_path": "experiments/skelliere/test_space.cpp",
+      "upstream_git_blob": "8dcb69d4b83cbec92199f75e2ca04d3dcd8c5a23"
+    },
+    {
+      "path": "SkellCore/tests/research/dynamics/test_wet_duck.cpp",
+      "git_blob": "26a488a84010efbd2356bb5dda70d15ee143fe71",
+      "upstream_path": "experiments/skelliere/test_wet_duck.cpp",
+      "upstream_git_blob": "a19eb8e8c3cce47352e8a7b91313c7a15b54ae24"
+    },
+    {
+      "path": "SkellCore/tests/research/modulation/test_stacked.cpp",
+      "git_blob": "c65452381c70c8b47a216159b48f1eadcc445204",
+      "upstream_path": "experiments/flangus_reference/test_stacked.cpp",
+      "upstream_git_blob": "811b1b83d6916662d232a4169360200684cd4d9e"
+    },
+    {
+      "path": "SkellCore/tests/research/spectral/test_color_oversampled.cpp",
+      "git_blob": "bde07d1ddde34aa29673f4ffad6c9cf76acf0dbe",
+      "upstream_path": "experiments/engine_lab/test_color_oversampled.cpp",
+      "upstream_git_blob": "e2d8b3180b7b774c5be8f1046a290c26b943db27"
+    },
+    {
+      "path": "SkellCore/tests/research/spectral/test_engines.cpp",
+      "git_blob": "616492e59ab4deb6ecaaa2e00e1b401a00be9e46",
+      "upstream_path": "experiments/engine_lab/test_engines.cpp",
+      "upstream_git_blob": "2e9e6529b00f0f1844b43f8a197a1544d4eb6971"
+    },
+    {
+      "path": "SkellCore/tests/research/spectral/test_fast_engines.cpp",
+      "git_blob": "951168ef4134d2e506d13f909f1f1b89627dabc3",
+      "upstream_path": "experiments/engine_lab/test_fast_engines.cpp",
+      "upstream_git_blob": "ca5f77fa262629d9380ac4f9bb3bdd1addb39e87"
+    },
+    {
+      "path": "SkellCore/tests/research/spectral/test_spacer3.cpp",
+      "git_blob": "83fd0899f6b8e8224ef4bcbfd905a254dce61eec",
+      "upstream_path": "experiments/engine_lab/test_spacer3.cpp",
+      "upstream_git_blob": "3c3a21221cce6045f6e4a7e53279196276e0b153"
+    },
+    {
+      "path": "SkellCore/tests/research/spectral/test_spacer_extended.cpp",
+      "git_blob": "17da832ec3c639c79c245bc06f3cfb72d07dec8a",
+      "upstream_path": "experiments/engine_lab/test_spacer_extended.cpp",
+      "upstream_git_blob": "066fc65cfc2b7d74cd01f864a5f4619152613e3f"
+    },
+    {
+      "path": "SkellCore/tests/research/spectral/test_spectral4.cpp",
+      "git_blob": "3a186a1eae08ccd7bfd42f4d57729be7d886c237",
+      "upstream_path": "experiments/engine_lab/test_spectral4.cpp",
+      "upstream_git_blob": "f01a22937ea5f4c79a98667815f13e8a47d05398"
+    },
+    {
+      "path": "SkellCore/tests/research/spectral/test_spectral4_edges.cpp",
+      "git_blob": "5e4ba8d60785c23d7ed1244e18b43f3c92df7593",
+      "upstream_path": "experiments/engine_lab/test_spectral4_edges.cpp",
+      "upstream_git_blob": "242b163e86e38e802fa7abd3cfecf73b3df0dc16"
+    }
+  ],
+  "live_gate": {
+    "git_blob": "182403aa74ea6162eab482175be4c71d66a51a0c",
+    "test_blob": "3f6b7636d93052c2f331814a0d37928717821e26"
+  },
+  "status": "experimental"
+}
