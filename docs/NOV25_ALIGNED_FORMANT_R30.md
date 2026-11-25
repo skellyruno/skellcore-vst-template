@@ -1,0 +1,5 @@
+# Opt-in aligned spectral formant revision (R30)
+
+Legacy neutral path peaks at 768 samples while a nonzero formant shift peaks at 1024. The new separate header keeps FIFO scheduling offset at 768 but aligns dry delay and reported latency to 1024. Formant-only operation retains analysis phase; synthesis phase is seeded from it to avoid stale phases. Existing header, consumers and preset identities are unchanged. Do not silently switch old presets or Classic/Crystal tuning engines. This is spectral colour, not an autotune algorithm.
+
+Local C++17 warnings-as-errors build: 30 checks passed, repeated under ASan/UBSan. Impulse peak and polarity tested for 0, +0.01, -6, +6 semitones at 8/44.1/48/96/192 kHz; 220/440 Hz fundamental checks at each rate. Local JUCE fetch failed DNS. Exact integrated CI, host PDC, automation transitions, VST3 and independent listening remain unverified. Isolated real vocal formant trial failed peak gate; do not promote. No private audio or fitted parameters committed.
