@@ -36,6 +36,13 @@ jobs:
         run: cmake --build build-core --config Release --parallel 2
       - name: Test
         run: ctest --test-dir build-core --build-config Release --output-on-failure
+      - name: Experimental signed entitlement verifier (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          g++ -std=c++17 -O3 -Wall -Wextra -Werror -I SkellCore/include/SkellCore/experimental/security SkellCore/tests/security/test_license.cpp -lcrypto -o /tmp/skell_license
+          /tmp/skell_license
+          g++ -std=c++17 -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer -no-pie -I SkellCore/include/SkellCore/experimental/security SkellCore/tests/security/test_license.cpp -lcrypto -o /tmp/skell_license_san
+          /tmp/skell_license_san
       - name: CPU benchmark (non-gating measurements)
         run: ctest --test-dir build-core --build-config Release -R SkellCoreBenchmark -V
       - name: Verify plugin generator
