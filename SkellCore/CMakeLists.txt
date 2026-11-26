@@ -135,6 +135,10 @@ if(SKELLCORE_BUILD_TESTS)
   target_link_libraries(SkellCoreWetReturnTests PRIVATE SkellCore::DSP)
   target_include_directories(SkellCoreWetReturnTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/SkellCore/backends/vocal)
   add_test(NAME SkellCoreWetReturnTests COMMAND SkellCoreWetReturnTests)
+  add_executable(SkellCoreCalibratedVocalBandTests tests/test_calibrated_vocal_bands.cpp)
+  target_link_libraries(SkellCoreCalibratedVocalBandTests PRIVATE SkellCore::DSP)
+  target_include_directories(SkellCoreCalibratedVocalBandTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/SkellCore/backends/vocal)
+  add_test(NAME SkellCoreCalibratedVocalBandTests COMMAND SkellCoreCalibratedVocalBandTests)
 endif()
 
 # Optional private offline study adapters; never included in standard plugin builds.
