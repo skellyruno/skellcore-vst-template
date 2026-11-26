@@ -7,12 +7,17 @@
 #include <SkellCore/GuidedTour.h>
 #include <JuceHeader.h>
 #include <cstdio>
+#include "SkellEditorDemo.h"
 
 int main(int argc, char** argv) {
     juce::ScopedJuceInitialiser_GUI juceGui;
     SkellAudioProcessor processor;
     processor.prepareToPlay(48000.0, 512);
     SkellAudioProcessorEditor editor(processor);
+    if (argc == 4 && std::string(argv[1]) == "--demo") {
+        const auto folder = juce::File::getCurrentWorkingDirectory().getChildFile(juce::String::fromUTF8(argv[2]));
+        return skellcore::editor_demo::run(processor, editor, folder, argv[3]);
+    }
 
     // Test converted coordinate handling through a nested JUCE component
     // and a per-step panel activation callback without touching plugin DSP.

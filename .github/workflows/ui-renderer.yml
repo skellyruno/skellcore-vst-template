@@ -9,6 +9,7 @@ on:
       - 'SkellCore/include/SkellCore/GuidedTour.h'
       - 'SkellCore/CMakeLists.txt'
       - 'tools/SkellCoreUiRendererMain.cpp'
+      - 'tools/SkellEditorDemo.h'
       - 'Source/**'
       - 'CMakeLists.txt'
       - '.github/workflows/ui-renderer.yml'
@@ -19,10 +20,15 @@ on:
       - 'SkellCore/include/SkellCore/GuidedTour.h'
       - 'SkellCore/CMakeLists.txt'
       - 'tools/SkellCoreUiRendererMain.cpp'
+      - 'tools/SkellEditorDemo.h'
       - 'Source/**'
       - 'CMakeLists.txt'
       - '.github/workflows/ui-renderer.yml'
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   screenshot-smoke:
@@ -44,6 +50,24 @@ jobs:
           $images = @(Get-ChildItem ui-screenshots -Filter *.png)
           if ($images.Count -ne 13) { throw "Expected 13 skin/size/tour PNGs, found $($images.Count)" }
           if (-not (Test-Path ui-screenshots/manifest.json)) { throw 'Missing screenshot manifest' }
+      - name: Capture real programmatically operated editor and processed audio
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem build -Recurse -File -Filter SkellCoreUISmokeRenderer.exe | Select-Object -First 1
+          if (-not $exe) { throw 'Renderer not found' }
+          $revision = (git rev-parse HEAD).Trim()
+          & $exe.FullName --demo (Join-Path (Get-Location) 'editor-demo-capture') $revision
+          if ($LASTEXITCODE -ne 0) { throw "Real editor sequence failed: $LASTEXITCODE" }
+          if (@(Get-ChildItem editor-demo-capture -Filter 'frame_*.png').Count -ne 144) { throw 'Expected 144 actual editor frames' }
+          foreach ($file in @('capture.json','editor.csv','dry.wav','processed.wav')) {
+            if (-not (Test-Path "editor-demo-capture/$file")) { throw "Missing capture $file" }
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SkellCore-Actual-Editor-Demo
+          path: editor-demo-capture/
+          if-no-files-found: error
+          retention-days: 14
       - uses: actions/upload-artifact@v4
         with:
           name: SkellCore-Headless-UI-Screenshots
