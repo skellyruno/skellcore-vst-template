@@ -1,5 +1,6 @@
 #pragma once
 #include "SpatialColor.h"
+#include "WetBalance.h"
 namespace skell_milestone {
 // Independent motion processor, based on general panning/filter concepts.
 // Control updates on the processing thread only. Prepare/reset off-thread.
@@ -28,6 +29,7 @@ private:
         double actualPan=0,far=0;
     };
     std::array<Lane,2> lanes{};double fs=48000,slew=0,detector=0,attack=0,release=0,wet=0,targetWet=0,wetTrim=1,targetTrim=1;
+    skell_balance::WetBalance balance;bool adaptiveWet=false;
     static double wrap(double p) noexcept {return p-std::floor(p);}
     static double wave(Wave w,double t) noexcept {
         switch(w){case Wave::Triangle:return 1.-std::abs(2.*t-1.);case Wave::Ramp:return t;case Wave::Square:return t<.5?0.:1.;default:return .5-.5*std::cos(2*pi*t);}
@@ -89,7 +91,7 @@ private:
         return {y*a.l*a.level,y*a.r*a.level};
     }
 public:
-    void prepare(double sampleRate){fs=rate(sampleRate);slew=-std::expm1(-1./(.002*fs));detector=-std::expm1(-1./(.005*fs));attack=-std::expm1(-1./(.005*fs));release=-std::expm1(-1./(.100*fs));for(int i=0;i<2;++i){lanes[i].buffer.assign(std::size_t(std::ceil(1.2*fs))+3,0.);set(i,lanes[i].p);}reset();}
+    void prepare(double sampleRate){fs=rate(sampleRate);balance.prepare(fs);slew=-std::expm1(-1./(.002*fs));detector=-std::expm1(-1./(.005*fs));attack=-std::expm1(-1./(.005*fs));release=-std::expm1(-1./(.100*fs));for(int i=0;i<2;++i){lanes[i].buffer.assign(std::size_t(std::ceil(1.2*fs))+3,0.);set(i,lanes[i].p);}reset();}
     void set(std::size_t i,Settings p) noexcept {
         if(i>=lanes.size())return;
         auto& a=lanes[i];p.seconds=bound(p.seconds,.05,125.,1.);p.beats=bound(p.beats,.0625,128.,2.);p.bpm=bound(p.bpm,30.,240.,120.);
@@ -100,9 +102,12 @@ public:
         if(a.p.mode!=p.mode||a.p.trigger!=p.trigger){a.progress=a.hold=0.;a.latched=a.active=a.high=false;}
         a.p=p;a.step=1./(fs*(p.mode==Mode::Tempo?p.beats*60./p.bpm:p.seconds));a.threshold=db(p.thresholdDb);a.drive=db(p.driveDb);a.close=db(p.closeDb);a.farShelf=db(p.farDb);a.colour=-std::expm1(-2*pi*p.shelfHz/fs);a.keyCoeff=-std::expm1(-2*pi*p.triggerHP/fs);
     }
-    void setMix(double amount) noexcept {targetWet=bound(amount,0.,1.,0.);}
+    void setMix(double amount) noexcept {targetWet=bound(amount,0.,1.,0.);balance.setMix(targetWet);}
+    // Configure off-thread before reset; enabling mid-stream is not a smoothed toggle.
+    void setAdaptiveWetBalance(bool on) noexcept {adaptiveWet=on;balance.setEnabled(on);}
+    bool dryHeadroomExceeded() const noexcept {return adaptiveWet&&balance.dryExceeded();}
     void setWetTrim(double gainDb) noexcept {targetTrim=db(bound(gainDb,-18.,12.,0.));}
-    void reset() noexcept {for(auto& a:lanes)resetLane(a);wet=targetWet;wetTrim=targetTrim;}
+    void reset() noexcept {for(auto& a:lanes)resetLane(a);wet=targetWet;wetTrim=targetTrim;balance.reset();}
     double position(std::size_t i)const noexcept{return i<2?lanes[i].actualPan:0.;}
     double cycle(std::size_t i)const noexcept{return i<2?lanes[i].progress:0.;}
     bool triggered(std::size_t i)const noexcept{return i<2&&lanes[i].high;}
@@ -114,6 +119,7 @@ public:
         wetTrim+=slew*(targetTrim-wetTrim);
         Frame dry=x;for(auto& l:lanes)if(l.p.dynamics==Dynamics::Dry){const double g=dynamics(l,std::max(std::abs(dry[0]),std::abs(dry[1])));dry={dry[0]*g,dry[1]*g};}
         Frame y{(1.-wet)*dry[0]+wet*wetTrim*.5*(a[0]+b[0]),(1.-wet)*dry[1]+wet*wetTrim*.5*(a[1]+b[1])};
+        if(adaptiveWet)y=balance.process(dry,{wetTrim*.5*(a[0]+b[0]),wetTrim*.5*(a[1]+b[1])});
         for(auto& l:lanes)if(l.p.dynamics==Dynamics::Output){const double g=dynamics(l,std::max(std::abs(y[0]),std::abs(y[1])));y={y[0]*g,y[1]*g};}
         return y;
     }
