@@ -1,0 +1,7 @@
+# Native multi-preset matching primitives
+
+Adds MatchToneFinish (causal complementary four-band tone, existing-side-only gain, linked level-dependent bounded gain) and MatchModulation (fractional delay with distinct stereo LFO taps, bounded feedback, explicit dry/wet). Fixed recipes, zero dry transport delay; actual echo/tap delay is intentional. No plugin wrapper, automation or factory changes. No private coefficients, IRs or audio in source. Tone gains and modulation settings frozen on prepare; allocation only in modulation prepare; no fitting or reference lookup in audio callbacks.
+
+Targeted GNU and Clang C++17 -O3 -DNDEBUG -Wall -Wextra -Werror tests passed: 44.1/48/96/192k, block schedules 1/64/256/511/1024, unity numerical transparency, mono preservation, fixed impulse timing, generated time-varying stereo, finite handling, bounds and reset. No host CPU certification, standalone CLI or full wrapper claim. New CI separate. Local JUCE fetch DNS blocked.
+
+Actual source-only C++ bridge fitting on historical candidates and ten provisional stage families. See Sound Match continuation record for scores, rejected cases and protected choices. Tone stage is an exploratory finish, not an exact full-chain reconstruction. Native moving-delay test improved isolated Speakerz Flangus and Hop Out chorus and Wait combined stereo stage; full-chain and independent validation still open. No automatic promotion.
