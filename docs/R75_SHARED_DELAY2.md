@@ -1,0 +1,5 @@
+# Shared native Delay 2 opt-in target
+
+`SKELLCORE_BUILD_MATCH_DELAY2=ON` makes `SkellCore::MatchDelay2` available. For offline builds provide `SKELLCORE_MATCH_DELAY2_SOURCE=/verified/skellay`. Without a local source it fetches the immutable Skellay revision. All three checked source files must match exact byte hashes (a Windows CRLF checkout must restore exact bytes). No default fetch or effect path changes. Consumers that already link the shared Skellay native target, such as Skell Preset, should use that target rather than link a second copy.
+
+CMake Release smoke built the exact cached source with -Wall -Wextra -Werror, -ffp-contract=off; CTest 2/2 passed for the shared compressor and synthetic Delay 2 cascade. Five rates and four block sizes; expected one-beat impulse at 144 BPM and sample-identical block splits, stereo tail tolerance 1.3e-7. No actual plugin or host validation. R74 measured near-null isolated Delay 2 on one private recording; raw state, tempo derived from the recording, and audio are not distributed. No claim of whole-chain parity or release readiness. Keep opt-in and draft.
