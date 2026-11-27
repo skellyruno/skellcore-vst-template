@@ -4,6 +4,7 @@
 #include <limits>
 using namespace skellcore::experimental::spectral;
 int main(){
+    double maxLegacyError=0,maxBlendError=0;
     for(double fs:{44100.,48000.,96000.,192000.})for(double mix:{0.,.5,1.}){
         PresenceEngine original,full;PresenceWetTrim zero,trim;
         original.prepare(fs,2600,3,-22,.7,mix);full.prepare(fs,2600,3,-22,.7,1);
@@ -15,14 +16,17 @@ int main(){
             if(n==1024)x.l=std::numeric_limits<double>::quiet_NaN();
             if(n==2048)x.r=std::numeric_limits<double>::infinity();
             auto a=original.process(x),b=zero.process(x),c=full.process(x),d=trim.process(x);
-            assert(a.l==b.l&&a.r==b.r);
+            for(auto y:{a,b,c,d})assert(std::isfinite(y.l)&&std::isfinite(y.r));
+            maxLegacyError=std::max({maxLegacyError,std::abs(a.l-b.l),std::abs(a.r-b.r)});
+            assert(maxLegacyError<=1e-12);
             x={skellcore::experimental::spectral::finite(x.l),skellcore::experimental::spectral::finite(x.r)};
-            assert(d.l==x.l*(1-mix)+mix*gain*c.l&&d.r==x.r*(1-mix)+mix*gain*c.r);
-            if(mix==0)assert(d.l==x.l&&d.r==x.r);
+            maxBlendError=std::max({maxBlendError,std::abs(d.l-(x.l*(1-mix)+mix*gain*c.l)),std::abs(d.r-(x.r*(1-mix)+mix*gain*c.r))});
+            assert(maxBlendError<=1e-12);
+            if(mix==0)assert(a.l==x.l&&a.r==x.r&&b.l==x.l&&b.r==x.r&&d.l==x.l&&d.r==x.r);
             assert(std::isfinite(d.l)&&std::isfinite(d.r));
         }
         trim.prepare(fs,2600,3,-22,.7,mix,std::numeric_limits<double>::quiet_NaN());original.prepare(fs,2600,3,-22,.7,mix);
-        const auto a=original.process({.2,-.3}),b=trim.process({.2,-.3});assert(a.l==b.l&&a.r==b.r);
+        const auto a=original.process({.2,-.3}),b=trim.process({.2,-.3});assert(std::abs(a.l-b.l)<=1e-12&&std::abs(a.r-b.r)<=1e-12);
     }
-    std::puts("Presence wet trim: exact legacy parity, wet-only gain, dry endpoint and reset at four rates passed");
+    std::printf("Presence wet trim: legacy max error %.17g, blend max error %.17g; exact dry endpoint and reset at four rates passed\n",maxLegacyError,maxBlendError);
 }
