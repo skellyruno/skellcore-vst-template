@@ -10,3 +10,6 @@ Glitch uses the shared LiveLevelGate in an exact-blob snapshot so its existing r
 
 ## 2026-11-28 reusable research milestone
 Added explicit experimental DetectorCascade, StatefulStereoMod, and CausalHalfbandColor with original exact coefficient pack. Local three-target CMake optimized and sanitizer harness 3/3 each; 12 recorded/rate comparisons and 1,140,300 stereo frames per set match source reference exactly on tested inputs. See [intake and application map](RESEARCH_TRANSFER_20261128.md) and [provenance manifest](research-transfer-20261128.json). No production replacements. Hosted new commit unverified until CI.
+
+## Low-buffering candidates — 2026-11-28
+New LowDelayColor causal 4x IIR (6-sample measured impulse peak, zero fixed lookahead, frequency-dependent phase), LiveColor direct/ADAA negative-control baseline and cross-family guard regression. Original 336-sample high-quality FIR retained. 78/78 development and 60/60 separate tone gates passed for narrow IIR; three Release and sanitizer tests passed locally. Headroom, phase/listening and high-rate callback gates remain open. See [low-delay report](LOW_DELAY_20261128.md). No default or consumer changes.

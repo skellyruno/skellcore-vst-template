@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "scope": "original opt-in low-buffering DSP; not commercial or production equivalence",
+  "parent": "d67fbe909960454151c16bdfe0b86fd6b5b23c49",
+  "files": [
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/spectral/LiveColor.h",
+      "git_blob": "62e268db2acd273cb29ba11036302ee8eb7d28ab"
+    },
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/spectral/LowDelayColor.h",
+      "git_blob": "1bab2775c5de8ddf0723dffd11ad9efbc99e01f7"
+    },
+    {
+      "path": "SkellCore/tests/research/spectral/test_live_color.cpp",
+      "git_blob": "dec015e99daefab03ce65e413bef2f69352aab99"
+    },
+    {
+      "path": "SkellCore/tests/research/spectral/test_low_delay_color.cpp",
+      "git_blob": "25decb745b43a5ba3c8a5c0e88b4dd2faaf517a4"
+    },
+    {
+      "path": "SkellCore/tests/research/spectral/test_low_delay_chain.cpp",
+      "git_blob": "3887cbb0778e1a04403b24dd28a12e252c8e18eb"
+    },
+    {
+      "path": "SkellCore/bench/research/low_delay/iir_bridge.cpp",
+      "git_blob": "75c2bad7238b2462e990f18094db3f083671f54a"
+    },
+    {
+      "path": "SkellCore/bench/research/low_delay/callback_bench.cpp",
+      "git_blob": "2c1e23c4157938968593987df73ed6fb9eb71ce2"
+    },
+    {
+      "path": "SkellCore/bench/research/low_delay/iir_bench.py",
+      "git_blob": "b642c6d166aa3da0141cd239b9416be79faae2d5"
+    },
+    {
+      "path": "SkellCore/bench/research/low_delay/native_bench.py",
+      "git_blob": "0f3bf4ed9eb971da79e809557fcb0b511d5dd248"
+    }
+  ],
+  "preliminary": {
+    "renders": 240,
+    "pass": {
+      "direct": 12,
+      "adaa": 6,
+      "short2x": 21,
+      "short2x_adaa": 12,
+      "reference": 48
+    },
+    "conditions": 48
+  },
+  "iir": {
+    "development_renders": 390,
+    "development_pass": 78,
+    "holdout_pairs": 60,
+    "holdout_pass": 60,
+    "worst_fundamental_delta_db": 0.02379847910064008,
+    "buffering_latency_samples": 0,
+    "impulse_peak_samples": 6,
+    "reference_latency_samples": 336,
+    "group_delay_samples_at_0_49_fs": 222.3392521824198,
+    "oracle_max_abs_error": 1.4432899320127035e-14,
+    "recorded_conditions": 12,
+    "recorded_waveform_rms_range": [
+      0.052474764824625056,
+      0.7568465784804119
+    ],
+    "recorded_spectral_magnitude_rms_range": [
+      0.0017027789300403898,
+      0.02791654071433613
+    ]
+  },
+  "callback": {
+    "frames": 15204000,
+    "callbacks": 100225,
+    "misses": 7,
+    "observed_scalar_new": 0,
+    "max_peak": 1.30346436,
+    "at_48k_64_processing_seconds_per_10s": 0.19031627
+  },
+  "guard": {
+    "latency_samples": 16,
+    "raw_max": 2.502077895,
+    "output_max": 0.891250938,
+    "finite_kernel_max": 0.891239577
+  },
+  "validation": {
+    "release": 3,
+    "sanitized": 3,
+    "offline_kit": 13
+  },
+  "status": "experimental only; no consumer adoption"
+}
