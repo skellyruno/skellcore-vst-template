@@ -1,0 +1,8 @@
+# Rack timing / soft color / peak optimization milestone — 2026-11-26
+
+Transferred independent RackColor.h and test byte-exact from skellyruno/skell-vst-decompiler@ce5473a3f0db8caf3d4f1a15e42f3f62ef27cab5: header 727a9f566740cde1e351ec73c7c9950e7e5b1d3e, test ff977fbe6265faf115fad256320d7cd1c77ca58c. Matched-rate space test adapted to existing isolated dynamics namespace only. Existing research engines retained; explicit opt-in.
+
+ParallelAlign: four already processed stereo paths with known fixed integer latency, delay alignment to max path, ramp normalized mix. 0/17/64/24 samples -> exact single impulse at 64 at all four rates. No plugin loading or dynamic host PDC. Skelliere/Skell Preset/Skell Studio/streaming rack candidates. Reprepare off-thread.
+FastReconstructionGuard: same prior guard law, monotonic queue replaces peak scan only. 600k synthetic stereo frames and three real 8s owner music excerpts exact output. 48k local median -14.88% processing time, no DAW CPU claim. Prior 24 sample delay, estimated peak ceiling limitations retained.
+SoftColor: symmetric cubic ADAA coloration, stable saturated limit. Selected fundamental-matched 15k fold -12.0976dB relative direct same curve at 48k 11k tone; adjacent averaging HF droop/half-sample phase shift, not tape or true peak. Real music finite, no vendor match.
+Matched-rate OriginalSpace burst late/early spread .19968dB, earlier impulse difference not adequate evidence of damping defect; no algorithm change. Strict optimized + ASan/UBSan local pass at four rates. Full Core CI pending. No private audio, vendor code or production/UI changes. StudioRack OBS shell intake remains in research repository; not a standalone host implementation.

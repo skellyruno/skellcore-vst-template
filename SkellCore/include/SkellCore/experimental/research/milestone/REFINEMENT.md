@@ -1,0 +1,9 @@
+# Wobble and peak refinement — 2026-11-26
+
+Exact source/test transfer from skellyruno/skell-vst-decompiler@6ae1be3a90dc031215e7cc4f4a0cdbdd39c828ee. Existing SpatialColor.h hash 183dc0c2d088c53e5db41fb46eacb1aa3361705f verified; new header 540d51d0274bd4adcc8d585e9b6bceab86198ce7 and test 53cd21dc7d3c6e823cd6924dc54a69deba259a09. All prior engines retained, explicit opt-in only.
+
+- MovingWobble for Wobble preset / Skell Preset and Skelliere: independently created moving side field with quadrature modulation, fractional delays, direct mid preservation and smoothed live controls. User specified Panagement as reference; no vendor implementation copied. Prior Wobbly B stays protected. Recovered complete-effect reference still requires pair alignment review. Exploratory 36-setting spatial evaluation produced close later-section stereo metrics, but no full-chain approval. Do not apply mastering side guard to this intentional creative effect.
+- GuardedWidth: exact mid, dynamic side/headroom restriction for normalized mastering inputs. Can narrow loud sections and does not guarantee intersample ceiling.
+- ReconstructionGuard: independent 4-phase estimate with mirrored history, linked gain and 24-sample extra delay. Combined 64 samples with prior Clip4x. Initial .25dB margin missed estimated ceiling in two excerpts; .65dB retest plus three separate sections passed six estimated 16x peak checks at -1dB target. Not a certified true-peak limiter; loudness tradeoff, broader stress, CPU/PDC and DAW validation required.
+
+Local strict optimized and sanitizer four-rate tests passed, live controls, bypass, reset, mid, sample peaks and impulse delay. Source/test blobs verified. No approved preset/UI/production changes; local JUCE DNS unavailable. No private audio, fitted parameters or vendor binaries committed.

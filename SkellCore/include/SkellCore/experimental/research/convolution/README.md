@@ -1,0 +1,8 @@
+# Native stereo convolution — opt-in research intake
+
+Original independent upstream: skellyruno/skell-vst-decompiler@6eaa64c9f5d8c6f897afd84ad483b8542886756a, experiments/ir/NativeStereoIR.h, blob 388ec459e4171123f745b3c4b6963a9721f1b12d. Exact header retained; test from upstream blob 83906e770004d08f57c92d872fb8e7e05f870458 changes include path only. Direct 64 taps, 64-frame immediate tier and deferred 1024-frame late tier, four stereo routes, single prepared transition. Upstream CI passed all eight workflows. Fresh local optimized and ASan/UBSan replay of original upstream sources: 60 comparisons, max error 7.97973e-17, zero instrumented C++ new calls during processing. Portability of the allocation instrumentation and new Core CI must be checked separately. No modification to Core.h, existing compressor, production DSP, preset states or UI. Experimental include only. Previous 10-second IR deadline proxy had 1/2250 misses; native host CPU, repeated transitions and long-tail stress remain unverified. No production adoption yet.
+
+New decompiler recovery experiment gave only small aggregate benefits and worsened the held-out actual dry vocal at 48/96 kHz. Do not replace existing compressors with that model. No commercial reference parity claim.
+
+## Hybrid room candidate
+See [HYBRID_ROOM_20261128.md](HYBRID_ROOM_20261128.md): original sparse four-route early convolution plus eight-line late network, zero added buffering, click-safe predelay. Optimized and sanitizer regression passes six rates. Existing dense IR and FDN remain unchanged; no production or commercial match claim.

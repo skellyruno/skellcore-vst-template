@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "parent": "5e01b823b126722172f43f6b5090a6c69c10bf36",
+  "research_reference": "skellyruno/skell-vst-decompiler@a647e3c6e2a7728038923883964f5d1c18e9908c",
+  "engine_blob": "eda96ddbc5659a707892c6cbbf683dc32e05001a",
+  "new_blobs": {
+    "SkellCore/include/SkellCore/experimental/research/spectral/PresenceWetTrim.h": "ac433856f85bfe36dedfdf52de0d478847256473",
+    "SkellCore/tests/research/spectral/test_presence_wet_trim.cpp": "5494d75854639dadca75212b9cdec5ab756bf6d4",
+    "SkellCore/tests/research/spectral/presence_vocal_adapter.cpp": "ab7cc0e2243fdd5fdeb804710c3f4ab77fad2ecd",
+    "SkellCore/tools/bench_presence_vocals.py": "05bb792573b6680ae17a0102136e2e1b835e8791"
+  },
+  "inputs": 36,
+  "vocal_fs": 44100,
+  "mix_cases": 108,
+  "exact_zero_trim": 108,
+  "exact_blend": 108,
+  "dry_endpoint": 36,
+  "after_over_scale_samples": 0,
+  "estimated_peak_rows": [
+    {
+      "wet": 0,
+      "before": -1.352033573302787,
+      "after": -1.352033573302787
+    },
+    {
+      "wet": 0.5,
+      "before": -0.7796026664992051,
+      "after": -3.4364377830223463
+    },
+    {
+      "wet": 1,
+      "before": 2.3158892139161087,
+      "after": -1.6841107860838898
+    }
+  ],
+  "local_report_sha256": "dfad180420e75690f968eda8c742d10ca8dbb2ccdc9418edcdfe82251b14657c",
+  "validation": {
+    "optimized": "passed",
+    "address_undefined_sanitizers": "passed",
+    "source_known_test_rates": [
+      44100,
+      48000,
+      96000,
+      192000
+    ],
+    "test_frames": 240000,
+    "cmake_registration": "added; full CMake/CI unverified",
+    "original_engine_unchanged": true,
+    "production_adoption": false
+  },
+  "limits": "Opt-in prepare-time gain. Fixed trim not limiter or universal guarantee; estimated intersample peak not certified true peak. Private recordings may overlap performances. No host or listening validation."
+}
