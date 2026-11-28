@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "source_repository": "skellyruno/skell-vst-decompiler",
+  "source_commit": "91dbea4b3b2815e73163af00ef396572d4b9af6c",
+  "core_parent": "550ce7768753a5820f21bb23807cd1b66c654af5",
+  "status": "experimental",
+  "files": [
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/modulation/StatefulStereoMod.h",
+      "git_blob": "4c4a0699e350f87c03aafb27289c01a6df7bb684"
+    },
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/dynamics/DetectorCascade.h",
+      "git_blob": "487289ebfd6c11577662f5725b4b9cd40fc4c4b7"
+    },
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/spectral/CausalHalfbandColor.h",
+      "git_blob": "f1615127baafbba523b0bd4c0b37bd7495077c56"
+    },
+    {
+      "path": "SkellCore/include/SkellCore/experimental/research/spectral/CausalHalfbandCoefficients.h",
+      "git_blob": "77ae5827b38a5b2ad146e8f3f6ab6f2cd2490157"
+    },
+    {
+      "path": "SkellCore/tests/research/modulation/test_stateful_stereo.cpp",
+      "git_blob": "5784b37e63344df568cbd58f7a9e5c9771362141"
+    },
+    {
+      "path": "SkellCore/tests/research/dynamics/test_detector_cascade.cpp",
+      "git_blob": "2461de9dcc16276cde853ef64a921ec686535d01"
+    },
+    {
+      "path": "SkellCore/tests/research/spectral/test_causal_halfband.cpp",
+      "git_blob": "2ef82badd86b523797398572bd59703f4f1b4a2a"
+    }
+  ],
+  "upstream_blobs": {
+    "StatefulStereoMod": "4c4a0699e350f87c03aafb27289c01a6df7bb684",
+    "StereoDetectorProbe": "770b78313f32e19bf9cbf206b32ebb14f579f834",
+    "CascadeIdentification": "be1bf6d8782d5985c0c661aaf76f5f62ffe75393",
+    "HalfbandColor": "4677278be8bee486bcd6c5bf565a55b37973d732"
+  },
+  "coefficients": {
+    "generator": "experiments/native_halfband.py",
+    "scipy": "1.17.0",
+    "first": {
+      "taps": 641,
+      "edge": 0.49
+    },
+    "second": {
+      "taps": 65,
+      "edge": 0.3
+    },
+    "latency_samples": 336
+  },
+  "validation": {
+    "local_release_tests": 3,
+    "local_sanitizer_tests": 3,
+    "recording_rate_conditions": 12,
+    "stereo_frames_per_comparison_set": 1140300,
+    "rates": [
+      44100,
+      48000,
+      96000,
+      192000
+    ],
+    "cascade_max_abs_error": 0,
+    "linked_detector_max_abs_error": 0,
+    "halfband_max_abs_error": 0,
+    "block_partition_max_abs_error": 0,
+    "kit_checks_passed": 13
+  },
+  "limitations": [
+    "Not commercial equivalence",
+    "No production integration",
+    "No DAW or full local repo build",
+    "No listening results",
+    "New hosted CI pending",
+    "Modulation overload/alias and 192k callback gate open",
+    "Halfband 336-sample latency"
+  ]
+}
